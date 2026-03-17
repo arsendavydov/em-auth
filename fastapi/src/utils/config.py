@@ -19,7 +19,7 @@ class Settings(BaseSettings):
 
     api_host: str
     api_port: int
-    root_path: str
+    root_path: str = ""
 
     postgres_host: str
     postgres_port: int
