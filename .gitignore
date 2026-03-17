@@ -1,0 +1,49 @@
+.DS_Store
+
+# Secrets and local envs
+.env
+.env.local
+.env.prod
+.env.test
+.env.*
+!.env.example
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.so
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Test and coverage artifacts
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
+# Type checker / linters
+.mypy_cache/
+.ruff_cache/
+.pyright/
+
+# Logs
+logs/
+*.log
+fastapi/logs/
+
+# IDE / editor files
+.idea/
+.vscode/
+.cursor/
+
+# Local tool artifacts
+terminals/
+agent-transcripts/
+
+
+todo.md
+backlog.md
