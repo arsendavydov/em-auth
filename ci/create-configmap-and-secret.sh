@@ -5,17 +5,18 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/helpers.sh"
 
 : "${KUBE_NAMESPACE:?KUBE_NAMESPACE is required}"
+SERVER_ENV_PATH="${SERVER_ENV_PATH:-/home/${K3S_SSH_USER}/.prod.env.em-auth}"
 
 TMP_ENV="/tmp/prod.env"
 TMP_ENV_CLEAN="/tmp/prod.env.clean"
 
-echo "📥 Загрузка переменных из ~/.prod.env на сервере..."
+echo "📥 Загрузка переменных из ${SERVER_ENV_PATH} на сервере..."
 if ssh -i "$K3S_SSH_KEY_PATH" \
     -o StrictHostKeyChecking=no \
     -o ConnectTimeout=10 \
     -o BatchMode=yes \
-    "$K3S_SSH_HOST" "test -f ~/.prod.env && cat ~/.prod.env" > "$TMP_ENV" 2>/dev/null; then
-  echo "✅ Файл ~/.prod.env найден"
+    "$K3S_SSH_HOST" "test -f ${SERVER_ENV_PATH} && cat ${SERVER_ENV_PATH}" > "$TMP_ENV" 2>/dev/null; then
+  echo "✅ Файл ${SERVER_ENV_PATH} найден"
   grep -v '^#' "$TMP_ENV" | grep -v '^$' | grep '=' > "$TMP_ENV_CLEAN" 2>/dev/null || true
   if [[ -s "$TMP_ENV_CLEAN" ]]; then
     set -a
@@ -25,7 +26,7 @@ if ssh -i "$K3S_SSH_KEY_PATH" \
   fi
   rm -f "$TMP_ENV" "$TMP_ENV_CLEAN"
 else
-  echo "⚠️  ~/.prod.env не найден на сервере, используем только переменные из CI"
+  echo "⚠️  ${SERVER_ENV_PATH} не найден на сервере, используем только переменные из CI"
 fi
 
 : "${PROJECT_NAME:=em-auth-service}"

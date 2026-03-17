@@ -9,6 +9,9 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine, delete, select
 from sqlalchemy.orm import Session, sessionmaker
 
+from src.models.access_rules import AccessRule
+from src.models.permissions import Permission
+from src.models.resources import Resource
 from src.models.roles import Role
 from src.models.user_roles import UserRole
 from src.models.users import User
@@ -123,6 +126,29 @@ class E2EDbHelper:
 
             session.execute(delete(UserRole).where(UserRole.user_id == user.id))
             session.delete(user)
+            session.commit()
+
+    def delete_access_rule(
+        self,
+        role_name: str,
+        resource_code: str,
+        permission_code: str,
+    ) -> None:
+        with self._session_factory() as session:
+            role = session.scalar(select(Role).where(Role.name == role_name))
+            resource = session.scalar(select(Resource).where(Resource.code == resource_code))
+            permission = session.scalar(select(Permission).where(Permission.code == permission_code))
+
+            if role is None or resource is None or permission is None:
+                return
+
+            session.execute(
+                delete(AccessRule).where(
+                    AccessRule.role_id == role.id,
+                    AccessRule.resource_id == resource.id,
+                    AccessRule.permission_id == permission.id,
+                )
+            )
             session.commit()
 
 

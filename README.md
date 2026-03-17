@@ -56,6 +56,7 @@ Backend-приложение на `FastAPI` с собственной систе
 ├── docker-compose.yml
 ├── docker-compose.local.yml
 ├── docker-compose.prod.yml
+├── em-auth.prod.env.example
 ├── k3s
 │   ├── fastapi-deployment.yaml
 │   ├── fastapi-service.yaml
@@ -133,7 +134,20 @@ TEST_PASSWORD=test_password
 - приложение стартует только при наличии обязательных переменных окружения;
 - Alembic берет реальные параметры подключения через `.env` в `fastapi/src/migrations/env.py`;
 - `ROOT_PATH` используется для path-based deployment, например `/apps/em-auth` в production;
-- `RATE_LIMIT_PER_MINUTE` и `RATE_LIMIT_AUTH_PER_MINUTE` используются `nginx` для ограничения запросов.
+- `RATE_LIMIT_PER_MINUTE` и `RATE_LIMIT_AUTH_PER_MINUTE` используются `nginx` для ограничения запросов;
+- в локальном `.env` лимиты можно держать повышенными для разработки и e2e, а в production использовать отдельные значения из `em-auth.prod.env`.
+
+### Production env на сервере
+
+Для production-деплоя используется отдельный server-side env-файл:
+
+- `/home/k3s-admin/.prod.env.em-auth`
+
+Это сделано специально, чтобы новый сервис не делил один `~/.prod.env` с проектом `Shum`.
+
+Локальный шаблон для заполнения:
+
+- `em-auth.prod.env.example`
 
 ## 4. Запуск проекта
 

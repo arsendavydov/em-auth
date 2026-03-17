@@ -14,3 +14,7 @@
 - `k3s` манифестов;
 - shell-скриптов из `ci/`;
 - production secrets и server-side `.prod.env`.
+
+Для `em-auth` server-side env хранится отдельно:
+
+- `/home/k3s-admin/.prod.env.em-auth`

@@ -16,6 +16,7 @@ jobs:
       K3S_SSH_KEY_BASE64: ${{ secrets.K3S_SSH_KEY_BASE64 }}
       KUBE_NAMESPACE: em-auth
       CI_REGISTRY: ${{ secrets.CI_REGISTRY || 'ghcr.io' }}
+      SERVER_ENV_PATH: /home/${{ secrets.K3S_SSH_USER }}/.prod.env.em-auth
 
     steps:
       - name: Checkout repository

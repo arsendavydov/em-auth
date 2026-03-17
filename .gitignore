@@ -7,6 +7,7 @@
 .env.test
 .env.*
 !.env.example
+em-auth.prod.env
 
 # Python cache
 __pycache__/

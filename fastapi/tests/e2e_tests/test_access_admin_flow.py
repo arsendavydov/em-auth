@@ -6,7 +6,13 @@ import pytest
 @pytest.mark.mock
 @pytest.mark.slow
 class TestAccessAdminFlow:
-    def test_access_admin_endpoints_and_rule_lifecycle(self, api, created_accounts):
+    def test_access_admin_endpoints_and_rule_lifecycle(self, api, created_accounts, e2e_db):
+        e2e_db.delete_access_rule(
+            role_name="user",
+            resource_code="mock:reports:list",
+            permission_code="read",
+        )
+
         admin_headers = api.auth_headers(created_accounts["admin1"])
         user_headers = api.auth_headers(created_accounts["user1"])
         manager_headers = api.auth_headers(created_accounts["manager1"])
@@ -101,6 +107,11 @@ class TestAccessAdminFlow:
                 )
                 assert delete_rule_response.status_code == 200, delete_rule_response.text
                 assert delete_rule_response.json() == {"status": "OK"}
+            e2e_db.delete_access_rule(
+                role_name="user",
+                resource_code="mock:reports:list",
+                permission_code="read",
+            )
 
         user_reports_after_delete = api.client.get("/api/v1/mock/reports", headers=user_headers)
         assert user_reports_after_delete.status_code == 403, user_reports_after_delete.text

@@ -85,7 +85,7 @@ server {
     }
 
     location ~ ^/api/v1/auth/(login|refresh)$ {
-        limit_req zone=auth_limit burst=2 nodelay;
+        limit_req zone=auth_limit burst=${RATE_LIMIT_AUTH_BURST} nodelay;
         limit_req_status 429;
 
         proxy_pass http://fastapi_backend;
@@ -100,7 +100,7 @@ server {
     }
 
     location = /api/v1/users/register {
-        limit_req zone=auth_limit burst=2 nodelay;
+        limit_req zone=auth_limit burst=${RATE_LIMIT_AUTH_BURST} nodelay;
         limit_req_status 429;
 
         proxy_pass http://fastapi_backend;
@@ -115,7 +115,7 @@ server {
     }
 
     location / {
-        limit_req zone=api_limit burst=10 nodelay;
+        limit_req zone=api_limit burst=${RATE_LIMIT_API_BURST} nodelay;
         limit_req_status 429;
 
         proxy_pass http://fastapi_backend;

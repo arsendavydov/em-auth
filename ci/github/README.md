@@ -15,3 +15,5 @@
   - `CI_REGISTRY_IMAGE`
   - `DOMAIN`
 - вызов общих скриптов из `ci/`, а не хранение всей deploy-логики прямо в workflow.
+- server-side env для этого проекта хранится отдельно:
+  - `/home/k3s-admin/.prod.env.em-auth`
