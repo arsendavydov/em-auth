@@ -51,6 +51,10 @@ fi
 
 ensure_tunnel
 
+# Убедимся, что namespace для em-auth существует перед созданием ConfigMap/Secret
+kubectl get namespace "$KUBE_NAMESPACE" --request-timeout=30s >/dev/null 2>&1 || \
+  kubectl create namespace "$KUBE_NAMESPACE" --request-timeout=30s
+
 kubectl delete configmap em-auth-config -n "$KUBE_NAMESPACE" --ignore-not-found=true --request-timeout=30s || true
 kubectl create configmap em-auth-config \
   --from-literal=PROJECT_NAME="$PROJECT_NAME" \
