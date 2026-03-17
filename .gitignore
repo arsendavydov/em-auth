@@ -45,6 +45,6 @@ fastapi/logs/
 terminals/
 agent-transcripts/
 
-
 todo.md
 backlog.md
+em-auth.credentials.local.md

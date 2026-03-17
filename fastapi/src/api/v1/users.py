@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.schemas.common import MessageResponse
 from src.schemas.users import UserCreate, UserRead, UserUpdate
 from src.services.users import UserService
-from src.utils.auth import RequestUser, get_current_user
+from src.utils.auth import RequestUser, get_current_user, require_admin_user
 from src.utils.db import get_db
 from src.repositories.users import UserRepository
 
@@ -21,6 +21,9 @@ USERS_403_RESPONSE = {
 }
 USERS_404_RESPONSE = {
     "description": "Запрошенный пользователь не найден.",
+}
+USERS_ROLE_404_RESPONSE = {
+    "description": "Указанная роль или пользователь не найдены, или у пользователя нет такой роли.",
 }
 
 
@@ -228,4 +231,54 @@ async def delete_user(
 
     await service.soft_delete_user(current_user, user_id)
     return MessageResponse()
+
+
+@router.post(
+    "/{user_id}/roles/{role_name}",
+    response_model=UserRead,
+    summary="Назначить роль пользователю",
+    description=(
+        "Назначает указанную роль пользователю. Доступно только для пользователей с ролями "
+        "`admin` или `superadmin`. Управление ролью `superadmin` разрешено только `superadmin`."
+    ),
+    responses={
+        401: USERS_401_RESPONSE,
+        403: USERS_403_RESPONSE,
+        404: USERS_ROLE_404_RESPONSE,
+    },
+)
+async def assign_role_to_user(
+    user_id: int,
+    role_name: str,
+    current_user: RequestUser = Depends(require_admin_user),
+    service: UserService = Depends(get_user_service),
+) -> UserRead:
+    """Назначает пользователю роль с учетом ролевых ограничений."""
+
+    return await service.assign_role(current_user, user_id, role_name)
+
+
+@router.delete(
+    "/{user_id}/roles/{role_name}",
+    response_model=UserRead,
+    summary="Удалить роль у пользователя",
+    description=(
+        "Удаляет указанную роль у пользователя. Доступно только для пользователей с ролями "
+        "`admin` или `superadmin`. Управление ролью `superadmin` разрешено только `superadmin`."
+    ),
+    responses={
+        401: USERS_401_RESPONSE,
+        403: USERS_403_RESPONSE,
+        404: USERS_ROLE_404_RESPONSE,
+    },
+)
+async def remove_role_from_user(
+    user_id: int,
+    role_name: str,
+    current_user: RequestUser = Depends(require_admin_user),
+    service: UserService = Depends(get_user_service),
+) -> UserRead:
+    """Удаляет роль пользователя с учетом ролевых ограничений."""
+
+    return await service.remove_role(current_user, user_id, role_name)
 

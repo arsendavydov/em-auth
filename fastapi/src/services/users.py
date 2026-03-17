@@ -116,6 +116,50 @@ class UserService:
             detail="You cannot delete this user",
         )
 
+    async def _ensure_can_manage_roles(
+        self,
+        actor: RequestUser,
+        target: User,
+        role_name: str,
+    ) -> None:
+        """
+        Проверяет, что текущий пользователь может назначать или отзывать роли целевого пользователя.
+
+        Правила:
+        * Только пользователи с ролями `admin` или `superadmin` могут управлять ролями.
+        * Операции с ролью `superadmin` доступны только пользователю с ролью `superadmin`.
+        * Пользователь с ролью `admin` не может управлять ролями пользователей, у которых уже есть
+          роли `admin` или `superadmin`.
+        """
+
+        actor_roles = actor.roles
+        if "superadmin" not in actor_roles and "admin" not in actor_roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You cannot manage roles for this user",
+            )
+
+        normalized_role = role_name.lower()
+        if normalized_role == "superadmin" and "superadmin" not in actor_roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Only superadmin can manage superadmin role",
+            )
+
+        target_roles = await self.repository.get_role_names(target.id)
+
+        if "superadmin" in target_roles and "superadmin" not in actor_roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Only superadmin can manage roles of another superadmin",
+            )
+
+        if "admin" in target_roles and "superadmin" not in actor_roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Admins cannot manage roles of other admins",
+            )
+
     async def register_user(self, data: UserCreate) -> UserRead:
         """
         Регистрирует нового пользователя.
@@ -218,4 +262,70 @@ class UserService:
 
         await self.refresh_token_repository.revoke_all_user_tokens(target.id)
         await self.repository.commit()
+
+    async def assign_role(
+        self,
+        actor: RequestUser,
+        user_id: int,
+        role_name: str,
+    ) -> UserRead:
+        """
+        Назначает пользователю роль с учетом ролевых ограничений.
+
+        Raises:
+            HTTPException: 403 если операция запрещена.
+            HTTPException: 404 если пользователь или роль не найдены.
+        """
+
+        target = await self._get_target_or_404(user_id)
+        normalized_role = role_name.lower()
+        await self._ensure_can_manage_roles(actor, target, normalized_role)
+
+        role = await self.repository.get_role_by_name(normalized_role)
+        if role is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Role not found",
+            )
+
+        await self.repository.add_user_role(target.id, role.id)
+        await self.repository.commit()
+        refreshed_target = await self._get_target_or_404(target.id)
+        return await self._build_user_read(refreshed_target)
+
+    async def remove_role(
+        self,
+        actor: RequestUser,
+        user_id: int,
+        role_name: str,
+    ) -> UserRead:
+        """
+        Удаляет роль пользователя с учетом ролевых ограничений.
+
+        Raises:
+            HTTPException: 403 если операция запрещена.
+            HTTPException: 404 если пользователь или роль не найдены.
+        """
+
+        target = await self._get_target_or_404(user_id)
+        normalized_role = role_name.lower()
+        await self._ensure_can_manage_roles(actor, target, normalized_role)
+
+        role = await self.repository.get_role_by_name(normalized_role)
+        if role is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Role not found",
+            )
+
+        removed = await self.repository.remove_user_role(target.id, role.id)
+        if not removed:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User does not have this role",
+            )
+
+        await self.repository.commit()
+        refreshed_target = await self._get_target_or_404(target.id)
+        return await self._build_user_read(refreshed_target)
 

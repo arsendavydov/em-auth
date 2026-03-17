@@ -59,6 +59,45 @@ class UserRepository:
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
 
+    async def get_role_by_name(self, role_name: str) -> Optional[Role]:
+        """Возвращает роль по имени или `None`, если запись не найдена."""
+
+        stmt = select(Role).where(Role.name == role_name)
+        result = await self.session.execute(stmt)
+        return result.scalar_one_or_none()
+
+    async def add_user_role(self, user_id: int, role_id: int) -> None:
+        """Назначает пользователю роль, если такой связи еще нет."""
+
+        stmt = select(UserRole).where(
+            UserRole.user_id == user_id,
+            UserRole.role_id == role_id,
+        )
+        result = await self.session.execute(stmt)
+        existing = result.scalar_one_or_none()
+        if existing is None:
+            self.session.add(UserRole(user_id=user_id, role_id=role_id))
+
+    async def remove_user_role(self, user_id: int, role_id: int) -> bool:
+        """
+        Удаляет роль пользователя.
+
+        Returns:
+            True, если связь была удалена, иначе False.
+        """
+
+        stmt = select(UserRole).where(
+            UserRole.user_id == user_id,
+            UserRole.role_id == role_id,
+        )
+        result = await self.session.execute(stmt)
+        existing = result.scalar_one_or_none()
+        if existing is None:
+            return False
+
+        await self.session.delete(existing)
+        return True
+
     async def add(self, user: User) -> User:
         """Добавляет пользователя в сессию и возвращает обновленный ORM-объект."""
 

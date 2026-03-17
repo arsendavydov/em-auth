@@ -240,6 +240,8 @@ async def test_user_routes_and_service_factory():
         get_user=AsyncMock(return_value="user"),
         update_user=AsyncMock(return_value="updated"),
         soft_delete_user=AsyncMock(),
+        assign_role=AsyncMock(return_value="role-assigned"),
+        remove_role=AsyncMock(return_value="role-removed"),
     )
     create_payload = UserCreate(
         email="new@em.ru",
@@ -257,6 +259,16 @@ async def test_user_routes_and_service_factory():
     assert await users_api.get_user(2, actor, service=fake_service) == "user"
     assert await users_api.update_me(update_payload, actor, service=fake_service) == "updated"
     assert await users_api.update_user(2, update_payload, actor, service=fake_service) == "updated"
+
+    # новые ручки управления ролями
+    assert (
+        await users_api.assign_role_to_user(2, "manager", actor, service=fake_service)
+        == "role-assigned"
+    )
+    assert (
+        await users_api.remove_role_from_user(2, "manager", actor, service=fake_service)
+        == "role-removed"
+    )
 
     delete_me_response = await users_api.delete_me(actor, service=fake_service)
     delete_user_response = await users_api.delete_user(2, actor, service=fake_service)

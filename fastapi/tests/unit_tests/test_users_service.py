@@ -40,6 +40,9 @@ def make_repository():
     repository.list_active_users = AsyncMock(return_value=[])
     repository.add = AsyncMock()
     repository.commit = AsyncMock()
+    repository.get_role_by_name = AsyncMock()
+    repository.add_user_role = AsyncMock()
+    repository.remove_user_role = AsyncMock(return_value=True)
     return repository
 
 
@@ -339,3 +342,161 @@ async def test_soft_delete_user_marks_user_inactive_and_revokes_tokens():
     assert target.deleted_at is not None
     service.refresh_token_repository.revoke_all_user_tokens.assert_awaited_once_with(12)
     repository.commit.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_ensure_can_manage_roles_allows_superadmin_and_admin_for_regular_users():
+    repository = make_repository()
+    service = UserService(repository)
+    target = make_user(30)
+
+    # superadmin может управлять ролями любого обычного пользователя
+    await service._ensure_can_manage_roles(
+        make_actor(1, ["superadmin"]),
+        target,
+        "admin",
+    )
+
+    # admin может управлять ролями обычного пользователя
+    repository.get_role_names.return_value = ["user"]
+    await service._ensure_can_manage_roles(
+        make_actor(2, ["admin"]),
+        target,
+        "manager",
+    )
+
+
+@pytest.mark.asyncio
+async def test_ensure_can_manage_roles_enforces_hierarchy_rules():
+    repository = make_repository()
+    service = UserService(repository)
+    target_admin = make_user(40)
+    target_superadmin = make_user(41)
+
+    # Обычный пользователь не может управлять ролями
+    with pytest.raises(HTTPException) as user_exc:
+        await service._ensure_can_manage_roles(
+            make_actor(3, ["user"]),
+            target_admin,
+            "user",
+        )
+
+    # admin не может управлять ролями superadmin
+    repository.get_role_names.return_value = ["superadmin"]
+    with pytest.raises(HTTPException) as admin_vs_super_exc:
+        await service._ensure_can_manage_roles(
+            make_actor(2, ["admin"]),
+            target_superadmin,
+            "user",
+        )
+
+    # admin не может управлять ролью superadmin
+    repository.get_role_names.return_value = []
+    with pytest.raises(HTTPException) as admin_set_super_exc:
+        await service._ensure_can_manage_roles(
+            make_actor(2, ["admin"]),
+            target_admin,
+            "superadmin",
+        )
+
+    # admin не может управлять другим admin
+    repository.get_role_names.return_value = ["admin"]
+    with pytest.raises(HTTPException) as admin_vs_admin_exc:
+        await service._ensure_can_manage_roles(
+            make_actor(2, ["admin"]),
+            target_admin,
+            "user",
+        )
+
+    assert user_exc.value.status_code == 403
+    assert admin_vs_super_exc.value.status_code == 403
+    assert admin_set_super_exc.value.status_code == 403
+    assert admin_vs_admin_exc.value.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_assign_role_adds_role_and_returns_updated_user():
+    repository = make_repository()
+    target = make_user(50)
+    refreshed = make_user(50)
+    repository.get_role_by_name.return_value = SimpleNamespace(id=7, name="manager")
+    service = UserService(repository)
+    service._get_target_or_404 = AsyncMock(side_effect=[target, refreshed])
+    service._ensure_can_manage_roles = AsyncMock()
+    service._build_user_read = AsyncMock(return_value="user-with-role")
+
+    result = await service.assign_role(
+        make_actor(1, ["superadmin"]),
+        user_id=50,
+        role_name="manager",
+    )
+
+    assert result == "user-with-role"
+    service._ensure_can_manage_roles.assert_awaited_once()
+    repository.get_role_by_name.assert_awaited_once()
+    repository.add_user_role.assert_awaited_once_with(50, 7)
+    repository.commit.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_assign_role_raises_when_role_not_found():
+    repository = make_repository()
+    target = make_user(51)
+    repository.get_role_by_name.return_value = None
+    service = UserService(repository)
+    service._get_target_or_404 = AsyncMock(return_value=target)
+    service._ensure_can_manage_roles = AsyncMock()
+
+    with pytest.raises(HTTPException) as exc_info:
+        await service.assign_role(
+            make_actor(1, ["superadmin"]),
+            user_id=51,
+            role_name="unknown",
+        )
+
+    assert exc_info.value.status_code == 404
+    assert exc_info.value.detail == "Role not found"
+
+
+@pytest.mark.asyncio
+async def test_remove_role_deletes_link_and_returns_updated_user():
+    repository = make_repository()
+    target = make_user(60)
+    refreshed = make_user(60)
+    repository.get_role_by_name.return_value = SimpleNamespace(id=3, name="user")
+    repository.remove_user_role.return_value = True
+    service = UserService(repository)
+    service._get_target_or_404 = AsyncMock(side_effect=[target, refreshed])
+    service._ensure_can_manage_roles = AsyncMock()
+    service._build_user_read = AsyncMock(return_value="user-without-role")
+
+    result = await service.remove_role(
+        make_actor(1, ["superadmin"]),
+        user_id=60,
+        role_name="user",
+    )
+
+    assert result == "user-without-role"
+    repository.remove_user_role.assert_awaited_once_with(60, 3)
+    repository.commit.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_remove_role_raises_when_user_does_not_have_role():
+    repository = make_repository()
+    target = make_user(61)
+    repository.get_role_by_name.return_value = SimpleNamespace(id=4, name="manager")
+    repository.remove_user_role.return_value = False
+    service = UserService(repository)
+    service._get_target_or_404 = AsyncMock(return_value=target)
+    service._ensure_can_manage_roles = AsyncMock()
+
+    with pytest.raises(HTTPException) as exc_info:
+        await service.remove_role(
+            make_actor(1, ["superadmin"]),
+            user_id=61,
+            role_name="manager",
+        )
+
+    assert exc_info.value.status_code == 404
+    assert exc_info.value.detail == "User does not have this role"
