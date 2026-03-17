@@ -7,7 +7,7 @@ metadata:
     app: fastapi-app
     component: api
 spec:
-  replicas: ${FASTAPI_REPLICAS:-1}
+  replicas: 1
   selector:
     matchLabels:
       app: fastapi-app
@@ -125,22 +125,22 @@ spec:
                   key: SECRET_KEY
           resources:
             requests:
-              memory: "${FASTAPI_MEMORY_REQUEST:-256Mi}"
-              cpu: "${FASTAPI_CPU_REQUEST:-50m}"
+              memory: "256Mi"
+              cpu: "50m"
           livenessProbe:
             httpGet:
               path: /api/v1/health
               port: 8000
-            initialDelaySeconds: ${HEALTH_CHECK_INITIAL_DELAY:-30}
-            periodSeconds: ${HEALTH_CHECK_PERIOD:-10}
-            timeoutSeconds: ${HEALTH_CHECK_TIMEOUT:-5}
-            failureThreshold: ${HEALTH_CHECK_FAILURE_THRESHOLD:-3}
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
           readinessProbe:
             httpGet:
               path: /api/v1/ready
               port: 8000
-            initialDelaySeconds: ${HEALTH_CHECK_READINESS_INITIAL_DELAY:-10}
-            periodSeconds: ${HEALTH_CHECK_READINESS_PERIOD:-5}
-            timeoutSeconds: ${HEALTH_CHECK_TIMEOUT:-5}
-            failureThreshold: ${HEALTH_CHECK_FAILURE_THRESHOLD:-3}
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 3
       restartPolicy: Always
