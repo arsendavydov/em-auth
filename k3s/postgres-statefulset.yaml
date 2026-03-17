@@ -1,0 +1,104 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: em-auth
+  labels:
+    app: postgres
+    component: database
+spec:
+  serviceName: postgres-service
+  replicas: ${POSTGRES_REPLICAS:-1}
+  selector:
+    matchLabels:
+      app: postgres
+      component: database
+  template:
+    metadata:
+      labels:
+        app: postgres
+        component: database
+    spec:
+      containers:
+        - name: postgres
+          image: ${POSTGRES_IMAGE_TAG:-postgres:16}
+          ports:
+            - containerPort: 5432
+              name: postgres
+              protocol: TCP
+          env:
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: em-auth-config
+                  key: POSTGRES_DB
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: em-auth-secrets
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: em-auth-secrets
+                  key: POSTGRES_PASSWORD
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+          resources:
+            requests:
+              memory: "${POSTGRES_MEMORY_REQUEST:-128Mi}"
+              cpu: "${POSTGRES_CPU_REQUEST:-40m}"
+            limits:
+              memory: "${POSTGRES_MEMORY_LIMIT:-256Mi}"
+              cpu: "${POSTGRES_CPU_LIMIT:-60m}"
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - pg_isready -U $(POSTGRES_USER) -d $(POSTGRES_DB)
+            initialDelaySeconds: ${HEALTH_CHECK_INITIAL_DELAY:-30}
+            periodSeconds: ${HEALTH_CHECK_PERIOD:-10}
+            timeoutSeconds: ${HEALTH_CHECK_TIMEOUT:-5}
+            failureThreshold: ${HEALTH_CHECK_FAILURE_THRESHOLD:-3}
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - pg_isready -U $(POSTGRES_USER) -d $(POSTGRES_DB)
+            initialDelaySeconds: ${HEALTH_CHECK_INITIAL_DELAY:-30}
+            periodSeconds: ${HEALTH_CHECK_PERIOD:-10}
+            timeoutSeconds: ${HEALTH_CHECK_TIMEOUT:-5}
+            failureThreshold: ${HEALTH_CHECK_FAILURE_THRESHOLD:-3}
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: local-path
+        resources:
+          requests:
+            storage: ${POSTGRES_STORAGE_SIZE:-10Gi}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+  namespace: em-auth
+  labels:
+    app: postgres
+    component: database
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5432
+      targetPort: 5432
+      protocol: TCP
+      name: postgres
+  selector:
+    app: postgres
+    component: database

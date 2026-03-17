@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: em-auth
+  labels:
+    name: em-auth
+    environment: production

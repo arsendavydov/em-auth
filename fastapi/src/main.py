@@ -60,6 +60,7 @@ def create_app() -> FastAPI:
         description=API_DESCRIPTION,
         lifespan=lifespan,
         openapi_tags=OPENAPI_TAGS,
+        root_path=settings.root_path,
     )
     app.add_middleware(HTTPLoggingMiddleware)
     app.add_exception_handler(DatabaseError, database_exception_handler)

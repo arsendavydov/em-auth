@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: fastapi-service
+  namespace: em-auth
+  labels:
+    app: fastapi-app
+    component: api
+spec:
+  type: ClusterIP
+  selector:
+    app: fastapi-app
+    component: api
+  ports:
+    - port: 80
+      targetPort: 8000
+      protocol: TCP
+      name: http

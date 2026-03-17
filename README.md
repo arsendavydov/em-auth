@@ -35,6 +35,7 @@ Backend-приложение на `FastAPI` с собственной систе
 - `Alembic`
 - `PyJWT`
 - `bcrypt`
+- `nginx`
 - `Docker` / `docker compose`
 - `pytest`
 
@@ -42,6 +43,11 @@ Backend-приложение на `FastAPI` с собственной систе
 
 ```text
 .
+├── .github
+│   └── workflows
+├── ci
+│   ├── common
+│   └── github
 ├── .env
 ├── .env.example
 ├── Dockerfile
@@ -50,6 +56,18 @@ Backend-приложение на `FastAPI` с собственной систе
 ├── docker-compose.yml
 ├── docker-compose.local.yml
 ├── docker-compose.prod.yml
+├── k3s
+│   ├── fastapi-deployment.yaml
+│   ├── fastapi-service.yaml
+│   ├── ingress.yaml
+│   ├── namespace.yaml
+│   ├── nginx-configmap.yaml
+│   ├── nginx-deployment.yaml
+│   ├── nginx-service.yaml
+│   └── postgres-statefulset.yaml
+├── nginx
+│   ├── Dockerfile
+│   └── default.conf.template
 ├── backlog.md
 ├── todo.md
 ├── requirements.txt
@@ -88,6 +106,7 @@ ENVIRONMENT=local
 
 API_HOST=0.0.0.0
 API_PORT=8000
+ROOT_PATH=
 
 POSTGRES_HOST=postgres
 POSTGRES_PORT=5432
@@ -104,13 +123,17 @@ REFRESH_TOKEN_EXPIRE_DAYS=7
 JWT_ALGORITHM=HS256
 
 LOG_LEVEL=info
+RATE_LIMIT_PER_MINUTE=60
+RATE_LIMIT_AUTH_PER_MINUTE=5
 TEST_BASE_URL=http://localhost:8000
 TEST_PASSWORD=test_password
 ```
 
 Важно:
 - приложение стартует только при наличии обязательных переменных окружения;
-- Alembic берет реальные параметры подключения через `.env` в `fastapi/src/migrations/env.py`.
+- Alembic берет реальные параметры подключения через `.env` в `fastapi/src/migrations/env.py`;
+- `ROOT_PATH` используется для path-based deployment, например `/apps/em-auth` в production;
+- `RATE_LIMIT_PER_MINUTE` и `RATE_LIMIT_AUTH_PER_MINUTE` используются `nginx` для ограничения запросов.
 
 ## 4. Запуск проекта
 
@@ -128,11 +151,14 @@ COMPOSE_BAKE=true docker compose -f docker-compose.local.yml up -d --build
 Что происходит:
 - поднимается `postgres`;
 - поднимается `fastapi`;
+- поднимается `nginx` как внешний reverse proxy;
 - перед запуском приложения накатываются миграции;
-- `uvicorn` стартует в режиме `--reload`.
+- `uvicorn` стартует в режиме `--reload`;
+- наружу публикуется `nginx`, а `fastapi` доступен только внутри docker-сети.
 
 Swagger:
 - `http://localhost:8000/docs`
+- `nginx` проксирует запросы на `fastapi`, поэтому внешний URL остаётся на порту `${API_PORT}`
 
 ### Prod mode
 
@@ -143,8 +169,20 @@ COMPOSE_BAKE=true docker compose -f docker-compose.prod.yml up -d --build
 
 В production-режиме:
 - используется `Dockerfile.prod`;
+- входящий трафик проходит через `nginx`;
 - приложение стартует без hot reload;
 - перед стартом также выполняются миграции.
+
+### Production route
+
+Планируемый production-маршрут в `k3s`:
+
+- домен: `async-black.ru`
+- path prefix: `/apps/em-auth`
+- Swagger: `https://async-black.ru/apps/em-auth/docs#/`
+- namespace: `em-auth`
+
+Для этого в production используется `ROOT_PATH=/apps/em-auth`.
 
 ## 5. Миграции
 

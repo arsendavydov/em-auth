@@ -1,0 +1,160 @@
+name: Deploy em-auth to K3s
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      K3S_SERVER_IP: ${{ secrets.K3S_SERVER_IP }}
+      K3S_SSH_USER: ${{ secrets.K3S_SSH_USER }}
+      K3S_SSH_KEY_BASE64: ${{ secrets.K3S_SSH_KEY_BASE64 }}
+      KUBE_NAMESPACE: em-auth
+      CI_REGISTRY: ${{ secrets.CI_REGISTRY || 'ghcr.io' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openssh-client netcat-openbsd curl
+          KUBECTL_VERSION=$(curl -L -s https://dl.k8s.io/release/stable.txt)
+          curl -LO "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
+          sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+          kubectl version --client
+          rm -f kubectl
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: requirements.txt
+
+      - name: Run unit tests
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+          export PROJECT_NAME="em-auth-service"
+          export ENVIRONMENT="ci"
+          export API_HOST="0.0.0.0"
+          export API_PORT="8000"
+          export ROOT_PATH=""
+          export POSTGRES_HOST="localhost"
+          export POSTGRES_PORT="5432"
+          export POSTGRES_DB="test_db"
+          export POSTGRES_USER="test_user"
+          export POSTGRES_PASSWORD="test_password"
+          export DATABASE_URL="postgresql+asyncpg://test_user:test_password@localhost:5432/test_db"
+          export SECRET_KEY="test-secret-key"
+          export ACCESS_TOKEN_EXPIRE_MINUTES="30"
+          export REFRESH_TOKEN_EXPIRE_DAYS="7"
+          export JWT_ALGORITHM="HS256"
+          export LOG_LEVEL="info"
+
+          pytest fastapi/tests/unit_tests -v --tb=short --color=yes
+
+      - name: Login to container registry and build images
+        env:
+          CI_REGISTRY_IMAGE: ${{ secrets.CI_REGISTRY_IMAGE || 'ghcr.io/arsendavydov/em-auth' }}
+          CI_REGISTRY_USER: ${{ secrets.CI_REGISTRY_USER }}
+          CI_REGISTRY_PASSWORD: ${{ secrets.CI_REGISTRY_PASSWORD }}
+          CI_COMMIT_SHA: ${{ github.sha }}
+        run: |
+          : "${CI_REGISTRY_USER:?CI_REGISTRY_USER is required}"
+          : "${CI_REGISTRY_PASSWORD:?CI_REGISTRY_PASSWORD is required}"
+          : "${CI_REGISTRY_IMAGE:?CI_REGISTRY_IMAGE is required}"
+          : "${CI_COMMIT_SHA:?CI_COMMIT_SHA is required}"
+
+          echo "$CI_REGISTRY_PASSWORD" | docker login "$CI_REGISTRY" -u "$CI_REGISTRY_USER" --password-stdin
+
+          docker build \
+            -f Dockerfile.prod \
+            -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA" \
+            -t "$CI_REGISTRY_IMAGE:latest" \
+            .
+          docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"
+          docker push "$CI_REGISTRY_IMAGE:latest"
+
+          docker build \
+            -f nginx/Dockerfile \
+            -t "$CI_REGISTRY_IMAGE/nginx:$CI_COMMIT_SHA" \
+            -t "$CI_REGISTRY_IMAGE/nginx:latest" \
+            .
+          docker push "$CI_REGISTRY_IMAGE/nginx:$CI_COMMIT_SHA"
+          docker push "$CI_REGISTRY_IMAGE/nginx:latest"
+
+      - name: Prepare SSH key
+        run: |
+          : "${K3S_SSH_KEY_BASE64:?K3S_SSH_KEY_BASE64 is required}"
+          : "${K3S_SERVER_IP:?K3S_SERVER_IP is required}"
+          : "${K3S_SSH_USER:?K3S_SSH_USER is required}"
+
+          mkdir -p ~/.ssh
+          echo "$K3S_SSH_KEY_BASE64" | base64 -d > ~/.ssh/k3s_key
+          chmod 600 ~/.ssh/k3s_key
+          ssh-keyscan -H "$K3S_SERVER_IP" >> ~/.ssh/known_hosts 2>/dev/null || true
+
+      - name: Prepare deploy scripts
+        run: |
+          chmod +x ci/*.sh ci/common/*.sh || true
+          export ACTIVE_CI_PROVIDER_EXPECTED=github
+          export K3S_SSH_KEY_PATH="$HOME/.ssh/k3s_key"
+          ci/common/check-active-provider.sh || { echo "⚠️ ACTIVE_CI_PROVIDER не github, деплой пропускаем"; exit 0; }
+
+      - name: Get kubeconfig
+        run: |
+          export K3S_SSH_KEY_PATH="$HOME/.ssh/k3s_key"
+          export KUBE_CONFIG_PATH="$HOME/.kube/config"
+          ci/get-kubeconfig.sh
+
+      - name: Prepare manifests and cluster secrets
+        env:
+          CI_REGISTRY_IMAGE: ${{ secrets.CI_REGISTRY_IMAGE || 'ghcr.io/arsendavydov/em-auth' }}
+          CI_COMMIT_SHA: ${{ github.sha }}
+          CI_REGISTRY_USER: ${{ secrets.CI_REGISTRY_USER }}
+          CI_REGISTRY_PASSWORD: ${{ secrets.CI_REGISTRY_PASSWORD }}
+          DOMAIN: ${{ secrets.DOMAIN || 'async-black.ru' }}
+          ROOT_PATH: ${{ secrets.ROOT_PATH || '/apps/em-auth' }}
+        run: |
+          export K3S_SSH_KEY_PATH="$HOME/.ssh/k3s_key"
+          export KUBE_CONFIG_PATH="$HOME/.kube/config"
+          export IMAGE_PULL_SECRET_NAME="ghcr-registry-secret"
+
+          sed -i "s|\${CI_REGISTRY_IMAGE}:latest|$CI_REGISTRY_IMAGE:${CI_COMMIT_SHA}|g" k3s/fastapi-deployment.yaml
+          sed -i "s|\${CI_REGISTRY_IMAGE}/nginx:latest|$CI_REGISTRY_IMAGE/nginx:${CI_COMMIT_SHA}|g" k3s/nginx-deployment.yaml
+          sed -i "s|\${IMAGE_PULL_SECRET_NAME}|$IMAGE_PULL_SECRET_NAME|g" k3s/fastapi-deployment.yaml
+          sed -i "s|\${IMAGE_PULL_SECRET_NAME}|$IMAGE_PULL_SECRET_NAME|g" k3s/nginx-deployment.yaml
+          sed -i "s|\${DOMAIN:-async-black.ru}|$DOMAIN|g" k3s/ingress.yaml
+
+          RATE_LIMIT_API=${RATE_LIMIT_PER_MINUTE:-60}
+          RATE_LIMIT_AUTH=${RATE_LIMIT_AUTH_PER_MINUTE:-5}
+          sed -i "s|\${RATE_LIMIT_PER_MINUTE:-60}|$RATE_LIMIT_API|g" k3s/nginx-configmap.yaml
+          sed -i "s|\${RATE_LIMIT_AUTH_PER_MINUTE:-5}|$RATE_LIMIT_AUTH|g" k3s/nginx-configmap.yaml
+
+          ci/create-configmap-and-secret.sh
+
+      - name: Apply manifests
+        run: |
+          export K3S_SSH_KEY_PATH="$HOME/.ssh/k3s_key"
+          export KUBE_CONFIG_PATH="$HOME/.kube/config"
+          ci/apply-manifests.sh
+
+      - name: Verify rollout
+        env:
+          DOMAIN: ${{ secrets.DOMAIN || 'async-black.ru' }}
+          ROOT_PATH: ${{ secrets.ROOT_PATH || '/apps/em-auth' }}
+        run: |
+          kubectl -n em-auth rollout status deployment/fastapi-app --timeout=180s
+          kubectl -n em-auth rollout status deployment/nginx --timeout=180s
+          kubectl -n em-auth rollout status statefulset/postgres --timeout=180s
+          echo "✅ Rollout завершен"
+          echo "🌐 Ожидаемый адрес документации: https://${DOMAIN}${ROOT_PATH}/docs#/"

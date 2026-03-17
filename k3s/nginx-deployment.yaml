@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+  namespace: em-auth
+  labels:
+    app: nginx
+    component: reverse-proxy
+spec:
+  replicas: ${NGINX_REPLICAS:-1}
+  selector:
+    matchLabels:
+      app: nginx
+      component: reverse-proxy
+  template:
+    metadata:
+      labels:
+        app: nginx
+        component: reverse-proxy
+    spec:
+      imagePullSecrets:
+        - name: ${IMAGE_PULL_SECRET_NAME}
+      containers:
+        - name: nginx
+          image: ${CI_REGISTRY_IMAGE}/nginx:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+              name: http
+              protocol: TCP
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+          resources:
+            requests:
+              memory: "${NGINX_MEMORY_REQUEST:-32Mi}"
+              cpu: "${NGINX_CPU_REQUEST:-10m}"
+            limits:
+              memory: "${NGINX_MEMORY_LIMIT:-64Mi}"
+              cpu: "${NGINX_CPU_LIMIT:-20m}"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 80
+            initialDelaySeconds: ${HEALTH_CHECK_READINESS_INITIAL_DELAY:-10}
+            periodSeconds: ${HEALTH_CHECK_PERIOD:-10}
+            timeoutSeconds: ${HEALTH_CHECK_TIMEOUT:-5}
+            failureThreshold: ${HEALTH_CHECK_FAILURE_THRESHOLD:-3}
+          readinessProbe:
+            tcpSocket:
+              port: 80
+            initialDelaySeconds: ${HEALTH_CHECK_READINESS_INITIAL_DELAY:-5}
+            periodSeconds: ${HEALTH_CHECK_READINESS_PERIOD:-5}
+            timeoutSeconds: ${HEALTH_CHECK_TIMEOUT:-5}
+            failureThreshold: ${HEALTH_CHECK_FAILURE_THRESHOLD:-3}
+      volumes:
+        - name: nginx-config
+          configMap:
+            name: nginx-config
+      restartPolicy: Always
