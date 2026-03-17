@@ -8,7 +8,7 @@ metadata:
     component: database
 spec:
   serviceName: postgres-service
-  replicas: ${POSTGRES_REPLICAS:-1}
+  replicas: 1
   selector:
     matchLabels:
       app: postgres
@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
         - name: postgres
-          image: ${POSTGRES_IMAGE_TAG:-postgres:16}
+          image: postgres:16
           ports:
             - containerPort: 5432
               name: postgres
@@ -49,31 +49,31 @@ spec:
               mountPath: /var/lib/postgresql/data
           resources:
             requests:
-              memory: "${POSTGRES_MEMORY_REQUEST:-128Mi}"
-              cpu: "${POSTGRES_CPU_REQUEST:-40m}"
+              memory: "128Mi"
+              cpu: "40m"
             limits:
-              memory: "${POSTGRES_MEMORY_LIMIT:-256Mi}"
-              cpu: "${POSTGRES_CPU_LIMIT:-60m}"
+              memory: "256Mi"
+              cpu: "60m"
           livenessProbe:
             exec:
               command:
                 - /bin/sh
                 - -c
                 - pg_isready -U $(POSTGRES_USER) -d $(POSTGRES_DB)
-            initialDelaySeconds: ${HEALTH_CHECK_INITIAL_DELAY:-30}
-            periodSeconds: ${HEALTH_CHECK_PERIOD:-10}
-            timeoutSeconds: ${HEALTH_CHECK_TIMEOUT:-5}
-            failureThreshold: ${HEALTH_CHECK_FAILURE_THRESHOLD:-3}
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
           readinessProbe:
             exec:
               command:
                 - /bin/sh
                 - -c
                 - pg_isready -U $(POSTGRES_USER) -d $(POSTGRES_DB)
-            initialDelaySeconds: ${HEALTH_CHECK_INITIAL_DELAY:-30}
-            periodSeconds: ${HEALTH_CHECK_PERIOD:-10}
-            timeoutSeconds: ${HEALTH_CHECK_TIMEOUT:-5}
-            failureThreshold: ${HEALTH_CHECK_FAILURE_THRESHOLD:-3}
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
   volumeClaimTemplates:
     - metadata:
         name: postgres-data
@@ -82,7 +82,7 @@ spec:
         storageClassName: local-path
         resources:
           requests:
-            storage: ${POSTGRES_STORAGE_SIZE:-10Gi}
+            storage: 10Gi
 ---
 apiVersion: v1
 kind: Service
