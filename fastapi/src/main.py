@@ -38,7 +38,7 @@ em-auth-service — backend-приложение для демонстрации
 Технологии:
 - FastAPI, Python 3.11, PostgreSQL 16, SQLAlchemy, Alembic;
 - JWT, refresh tokens, bcrypt;
-- nginx, Kubernetes (k3s), GitHub Actions.
+- nginx, Kubernetes (k3s), CI/CD (GitHub Actions).
 
 Исходный код и документация: [github.com/arsendavydov/em-auth](https://github.com/arsendavydov/em-auth/)
 """.strip()
