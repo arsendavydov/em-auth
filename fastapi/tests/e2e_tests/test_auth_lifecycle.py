@@ -18,7 +18,7 @@ class TestAuthLifecycle:
 
         created_user = register_response.json()
         assert created_user["email"] == fresh_email
-        assert created_user["roles"] == []
+        assert created_user["roles"] == ["user"]
         assert created_user["deleted_at"] is None
 
         login_response = api.login(fresh_email)

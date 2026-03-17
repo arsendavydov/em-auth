@@ -35,7 +35,12 @@ em-auth-service — backend-приложение для демонстрации
 - admin API для управления правилами доступа;
 - health/readiness endpoints для проверки состояния приложения.
 
-Исходный код и документация: https://github.com/arsendavydov/em-auth/
+Технологии:
+- FastAPI, Python 3.11, PostgreSQL 16, SQLAlchemy, Alembic;
+- JWT, refresh tokens, bcrypt;
+- nginx, Kubernetes (k3s), GitHub Actions.
+
+Исходный код и документация: [github.com/arsendavydov/em-auth](https://github.com/arsendavydov/em-auth/)
 """.strip()
 
 OPENAPI_TAGS = [
@@ -65,6 +70,12 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
         openapi_tags=OPENAPI_TAGS,
         root_path=settings.root_path,
+        servers=[
+            {
+                "url": settings.root_path or "/apps/em-auth",
+                "description": "Production server",
+            },
+        ],
     )
     app.add_middleware(HTTPLoggingMiddleware)
     app.add_exception_handler(DatabaseError, database_exception_handler)

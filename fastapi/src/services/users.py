@@ -183,6 +183,13 @@ class UserService:
         )
         user = User(**user_data)
         user = await self.repository.add(user)
+
+        # Пытаемся по умолчанию выдать пользователю роль `user`.
+        # Если роль отсутствует в БД, регистрация все равно считается успешной.
+        default_role = await self.repository.get_role_by_name("user")
+        if default_role is not None:
+            await self.repository.add_user_role(user.id, default_role.id)
+
         await self.repository.commit()
         return await self._build_user_read(user)
 

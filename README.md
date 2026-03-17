@@ -2,9 +2,9 @@
 
 Backend-приложение на `FastAPI` и `PostgreSQL` с собственной системой аутентификации и авторизации, построенной поверх `JWT`, `refresh tokens` и таблиц правил доступа в БД.
 
-Репозиторий: https://github.com/arsendavydov/em-auth/
+Репозиторий: [github.com/arsendavydov/em-auth](https://github.com/arsendavydov/em-auth/)
 
-### Выполнение задания (кратко)
+### Выполнение задания
 
 - ✅ Собственная аутентификация: регистрация, login, refresh, logout, мягкое удаление пользователя.
 - ✅ Ролевая модель (`user`, `manager`, `admin`, `superadmin`) и таблицы `roles`, `user_roles`, `resources`, `permissions`, `access_rules`, `refresh_tokens`.
@@ -40,9 +40,6 @@ COMPOSE_BAKE=true docker compose -f docker-compose.local.yml up -d --build
 
 3. Swagger и API:
 
-- Swagger UI: `http://localhost:8000/docs`
-- API: `http://localhost:8000/api/v1/...`
-
 ### Production (k3s)
 
 - Домен: `async-black.ru`
@@ -58,6 +55,16 @@ COMPOSE_BAKE=true docker compose -f docker-compose.local.yml up -d --build
 
 Локальный шаблон для него: `em-auth.prod.env.example`.
 
+### Таблицы БД
+
+- **users**: учетные записи пользователей (ФИО, email-логин, пароль, метаданные, флаги активности и soft delete).
+- **roles**: системные роли (`user`, `manager`, `admin`, `superadmin`).
+- **user_roles**: связь many-to-many между пользователями и ролями.
+- **resources**: коды ресурсов, к которым применяется авторизация (например, `mock:projects:list`).
+- **permissions**: типы действий над ресурсами (например, `read`).
+- **access_rules**: правила доступа вида «роль + ресурс + действие → разрешено/запрещено».
+- **refresh_tokens**: выданные refresh tokens с возможностью последующего revoke.
+
 ### Что внутри
 
 - Роуты: `fastapi/src/api/v1/*`
@@ -68,4 +75,4 @@ COMPOSE_BAKE=true docker compose -f docker-compose.local.yml up -d --build
 - Утилиты (config, auth, db, logger, startup): `fastapi/src/utils/*`
 - Middleware и обработчики ошибок: `fastapi/src/middleware/*`, `fastapi/src/exceptions/*`
 
-Детальный backlog и разбор всех реализованных пунктов задания см. в файле `backlog.md`. Декомпозиция требований тестового задания — в `todo.md`.
+

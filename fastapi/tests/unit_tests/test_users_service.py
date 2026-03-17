@@ -226,6 +226,7 @@ async def test_register_user_creates_user(monkeypatch):
     repository.get_by_email.return_value = None
     created_user = make_user(15, email="new@em.ru")
     repository.add.return_value = created_user
+    repository.get_role_by_name.return_value = SimpleNamespace(id=1, name="user")
     service = UserService(repository)
 
     monkeypatch.setattr("src.services.users.hash_password", lambda password: f"hash:{password}")
@@ -244,6 +245,8 @@ async def test_register_user_creates_user(monkeypatch):
     repository.add.assert_awaited_once()
     saved_user = repository.add.await_args.args[0]
     assert saved_user.password_hash == "hash:secret123"
+    repository.get_role_by_name.assert_awaited_once_with("user")
+    repository.add_user_role.assert_awaited_once_with(15, 1)
     repository.commit.assert_awaited_once()
 
 
