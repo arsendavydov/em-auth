@@ -35,12 +35,8 @@ class TestAccessAdminFlow:
         permissions = permissions_response.json()
 
         user_role_id = next(item["id"] for item in roles if item["name"] == "user")
-        reports_resource_id = next(
-            item["id"] for item in resources if item["code"] == "mock:reports:list"
-        )
-        read_permission_id = next(
-            item["id"] for item in permissions if item["code"] == "read"
-        )
+        reports_resource_id = next(item["id"] for item in resources if item["code"] == "mock:reports:list")
+        read_permission_id = next(item["id"] for item in permissions if item["code"] == "read")
 
         user_projects_response = api.client.get("/api/v1/mock/projects", headers=user_headers)
         user_reports_response = api.client.get("/api/v1/mock/reports", headers=user_headers)

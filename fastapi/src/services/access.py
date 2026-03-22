@@ -1,4 +1,4 @@
-from fastapi import HTTPException, status
+from fastapi import HTTPException
 
 from src.models.access_rules import AccessRule
 from src.repositories.access_admin import AccessAdminRepository
@@ -42,10 +42,7 @@ class AccessAdminService:
         """Возвращает список ролей в формате API."""
 
         roles = await self.repository.list_roles()
-        return [
-            RoleRead(id=role.id, name=role.name, description=role.description)
-            for role in roles
-        ]
+        return [RoleRead(id=role.id, name=role.name, description=role.description) for role in roles]
 
     async def list_resources(self) -> list[ResourceRead]:
         """Возвращает список ресурсов в формате API."""
@@ -171,4 +168,3 @@ class AccessAdminService:
             raise HTTPException(status_code=404, detail="Access rule not found")
         await self.repository.delete_rule(rule)
         await self.repository.commit()
-

@@ -110,4 +110,3 @@ class AuthService:
 
         await self.refresh_token_repository.revoke_all_user_tokens(user_id)
         await self.repository.commit()
-

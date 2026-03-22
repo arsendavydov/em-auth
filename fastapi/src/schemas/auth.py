@@ -1,7 +1,5 @@
 from pydantic import BaseModel, EmailStr, Field
 
-from src.schemas.common import MessageResponse
-
 
 class LoginRequest(BaseModel):
     """Тело запроса для входа пользователя."""
@@ -43,4 +41,3 @@ class TokenResponse(BaseModel):
         description="Тип токена авторизации.",
         examples=["bearer"],
     )
-

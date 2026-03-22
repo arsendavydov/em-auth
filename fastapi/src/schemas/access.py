@@ -42,7 +42,9 @@ class AccessRuleCreate(BaseModel):
 
     role_id: int = Field(description="Идентификатор роли, для которой создается правило.", examples=[1])
     resource_id: int = Field(description="Идентификатор ресурса, к которому применяется правило.", examples=[2])
-    permission_id: int = Field(description="Идентификатор действия, разрешаемого или запрещаемого правилом.", examples=[3])
+    permission_id: int = Field(
+        description="Идентификатор действия, разрешаемого или запрещаемого правилом.", examples=[3]
+    )
     is_allowed: bool = Field(
         default=True,
         description="Флаг разрешения доступа. `true` разрешает действие, `false` запрещает.",
@@ -70,4 +72,3 @@ class AccessRuleRead(BaseModel):
     permission_id: int = Field(description="Идентификатор действия.", examples=[3])
     permission_code: str = Field(description="Код действия.", examples=["read"])
     is_allowed: bool = Field(description="Флаг разрешения доступа.", examples=[True])
-

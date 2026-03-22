@@ -169,12 +169,11 @@ async def test_http_logging_middleware_logs_success_and_exception(caplog):
         )
     assert response.status_code == 201
 
-    with caplog.at_level(logging.INFO):
-        with pytest.raises(RuntimeError):
-            await middleware.dispatch(
-                request,
-                AsyncMock(side_effect=RuntimeError("boom")),
-            )
+    with caplog.at_level(logging.INFO), pytest.raises(RuntimeError):
+        await middleware.dispatch(
+            request,
+            AsyncMock(side_effect=RuntimeError("boom")),
+        )
 
     assert any('GET /test?page=1 HTTP/1.1" 201' in message for message in caplog.messages)
     assert any('GET /test?page=1 HTTP/1.1" 500' in message for message in caplog.messages)
@@ -261,14 +260,8 @@ async def test_user_routes_and_service_factory():
     assert await users_api.update_user(2, update_payload, actor, service=fake_service) == "updated"
 
     # новые ручки управления ролями
-    assert (
-        await users_api.assign_role_to_user(2, "manager", actor, service=fake_service)
-        == "role-assigned"
-    )
-    assert (
-        await users_api.remove_role_from_user(2, "manager", actor, service=fake_service)
-        == "role-removed"
-    )
+    assert await users_api.assign_role_to_user(2, "manager", actor, service=fake_service) == "role-assigned"
+    assert await users_api.remove_role_from_user(2, "manager", actor, service=fake_service) == "role-removed"
 
     delete_me_response = await users_api.delete_me(actor, service=fake_service)
     delete_user_response = await users_api.delete_user(2, actor, service=fake_service)

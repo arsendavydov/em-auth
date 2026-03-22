@@ -19,8 +19,7 @@ MOCK_403_RESPONSE = {
     response_model=list[MockProject],
     summary="Получить mock-проекты",
     description=(
-        "Возвращает список mock-проектов. "
-        "Доступ разрешен только пользователям с правом `mock:projects:list/read`."
+        "Возвращает список mock-проектов. Доступ разрешен только пользователям с правом `mock:projects:list/read`."
     ),
     responses={
         401: MOCK_401_RESPONSE,
@@ -28,15 +27,13 @@ MOCK_403_RESPONSE = {
     },
 )
 async def list_mock_projects(
-    current_user: RequestUser = Depends(
-        require_permission("mock:projects:list", "read")
-    ),
+    current_user: RequestUser = Depends(require_permission("mock:projects:list", "read")),
 ) -> list[MockProject]:
     """Возвращает список mock-проектов для демонстрации RBAC."""
 
     return [
-        {"id": 1, "name": "Mobile Banking", "status": "active"},
-        {"id": 2, "name": "Admin Portal", "status": "draft"},
+        MockProject(id=1, name="Mobile Banking", status="active"),
+        MockProject(id=2, name="Admin Portal", status="draft"),
     ]
 
 
@@ -45,8 +42,7 @@ async def list_mock_projects(
     response_model=list[MockReport],
     summary="Получить mock-отчеты",
     description=(
-        "Возвращает список mock-отчетов. "
-        "Доступ разрешен только пользователям с правом `mock:reports:list/read`."
+        "Возвращает список mock-отчетов. Доступ разрешен только пользователям с правом `mock:reports:list/read`."
     ),
     responses={
         401: MOCK_401_RESPONSE,
@@ -54,15 +50,13 @@ async def list_mock_projects(
     },
 )
 async def list_mock_reports(
-    current_user: RequestUser = Depends(
-        require_permission("mock:reports:list", "read")
-    ),
+    current_user: RequestUser = Depends(require_permission("mock:reports:list", "read")),
 ) -> list[MockReport]:
     """Возвращает список mock-отчетов для демонстрации RBAC."""
 
     return [
-        {"id": 1, "title": "Weekly KPI", "period": "2026-W11"},
-        {"id": 2, "title": "Monthly Revenue", "period": "2026-03"},
+        MockReport(id=1, title="Weekly KPI", period="2026-W11"),
+        MockReport(id=2, title="Monthly Revenue", period="2026-03"),
     ]
 
 
@@ -71,8 +65,7 @@ async def list_mock_reports(
     response_model=list[MockDocument],
     summary="Получить mock-документы",
     description=(
-        "Возвращает список mock-документов. "
-        "Доступ разрешен только пользователям с правом `mock:documents:list/read`."
+        "Возвращает список mock-документов. Доступ разрешен только пользователям с правом `mock:documents:list/read`."
     ),
     responses={
         401: MOCK_401_RESPONSE,
@@ -80,14 +73,11 @@ async def list_mock_reports(
     },
 )
 async def list_mock_documents(
-    current_user: RequestUser = Depends(
-        require_permission("mock:documents:list", "read")
-    ),
+    current_user: RequestUser = Depends(require_permission("mock:documents:list", "read")),
 ) -> list[MockDocument]:
     """Возвращает список mock-документов для демонстрации RBAC."""
 
     return [
-        {"id": 1, "filename": "security-policy.pdf", "owner": "admin1@em.ru"},
-        {"id": 2, "filename": "roadmap.docx", "owner": "manager1@em.ru"},
+        MockDocument(id=1, filename="security-policy.pdf", owner="admin1@em.ru"),
+        MockDocument(id=2, filename="roadmap.docx", owner="manager1@em.ru"),
     ]
-

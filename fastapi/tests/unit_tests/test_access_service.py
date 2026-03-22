@@ -29,12 +29,8 @@ def make_repository():
 async def test_list_methods_map_entities_to_read_models():
     repository = make_repository()
     repository.list_roles.return_value = [SimpleNamespace(id=1, name="admin", description="a")]
-    repository.list_resources.return_value = [
-        SimpleNamespace(id=2, code="mock:projects:list", description="r")
-    ]
-    repository.list_permissions.return_value = [
-        SimpleNamespace(id=3, code="read", description="p")
-    ]
+    repository.list_resources.return_value = [SimpleNamespace(id=2, code="mock:projects:list", description="r")]
+    repository.list_permissions.return_value = [SimpleNamespace(id=3, code="read", description="p")]
     rule = SimpleNamespace(
         id=4,
         role_id=1,
@@ -67,9 +63,7 @@ async def test_create_rule_returns_created_rule():
         is_allowed=True,
     )
     repository.add_rule.return_value = created_rule
-    repository.list_rules.return_value = [
-        (created_rule, "user", "mock:reports:list", "read")
-    ]
+    repository.list_rules.return_value = [(created_rule, "user", "mock:reports:list", "read")]
 
     service = AccessAdminService(repository)
 
@@ -97,9 +91,7 @@ async def test_create_rule_raises_when_role_not_found():
     service = AccessAdminService(repository)
 
     with pytest.raises(HTTPException) as exc_info:
-        await service.create_rule(
-            AccessRuleCreate(role_id=1, resource_id=2, permission_id=3, is_allowed=True)
-        )
+        await service.create_rule(AccessRuleCreate(role_id=1, resource_id=2, permission_id=3, is_allowed=True))
 
     assert exc_info.value.status_code == 404
     assert exc_info.value.detail == "Role not found"
@@ -112,9 +104,7 @@ async def test_create_rule_raises_when_resource_not_found():
     service = AccessAdminService(repository)
 
     with pytest.raises(HTTPException) as exc_info:
-        await service.create_rule(
-            AccessRuleCreate(role_id=1, resource_id=2, permission_id=3, is_allowed=True)
-        )
+        await service.create_rule(AccessRuleCreate(role_id=1, resource_id=2, permission_id=3, is_allowed=True))
 
     assert exc_info.value.status_code == 404
     assert exc_info.value.detail == "Resource not found"
@@ -127,9 +117,7 @@ async def test_create_rule_raises_when_permission_not_found():
     service = AccessAdminService(repository)
 
     with pytest.raises(HTTPException) as exc_info:
-        await service.create_rule(
-            AccessRuleCreate(role_id=1, resource_id=2, permission_id=3, is_allowed=True)
-        )
+        await service.create_rule(AccessRuleCreate(role_id=1, resource_id=2, permission_id=3, is_allowed=True))
 
     assert exc_info.value.status_code == 404
     assert exc_info.value.detail == "Permission not found"
@@ -142,9 +130,7 @@ async def test_create_rule_raises_when_duplicate_exists():
     service = AccessAdminService(repository)
 
     with pytest.raises(HTTPException) as exc_info:
-        await service.create_rule(
-            AccessRuleCreate(role_id=1, resource_id=2, permission_id=3, is_allowed=True)
-        )
+        await service.create_rule(AccessRuleCreate(role_id=1, resource_id=2, permission_id=3, is_allowed=True))
 
     assert exc_info.value.status_code == 409
     assert exc_info.value.detail == "Access rule already exists"
@@ -164,9 +150,7 @@ async def test_create_rule_raises_when_response_row_is_missing():
     service = AccessAdminService(repository)
 
     with pytest.raises(HTTPException) as exc_info:
-        await service.create_rule(
-            AccessRuleCreate(role_id=1, resource_id=2, permission_id=3, is_allowed=True)
-        )
+        await service.create_rule(AccessRuleCreate(role_id=1, resource_id=2, permission_id=3, is_allowed=True))
 
     assert exc_info.value.status_code == 500
     assert exc_info.value.detail == "Failed to build access rule response"
@@ -183,9 +167,7 @@ async def test_update_rule_returns_updated_rule():
         is_allowed=True,
     )
     repository.get_rule.return_value = existing_rule
-    repository.list_rules.return_value = [
-        (existing_rule, "user", "mock:reports:list", "read")
-    ]
+    repository.list_rules.return_value = [(existing_rule, "user", "mock:reports:list", "read")]
     service = AccessAdminService(repository)
 
     result = await service.update_rule(5, AccessRuleUpdate(is_allowed=False))

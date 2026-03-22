@@ -27,4 +27,3 @@ class User(Base):
         nullable=False,
     )
     deleted_at = Column(DateTime(timezone=True), nullable=True)
-

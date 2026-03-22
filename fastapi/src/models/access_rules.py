@@ -21,4 +21,3 @@ class AccessRule(Base):
         nullable=False,
     )
     is_allowed = Column(Boolean, nullable=False, default=True)
-

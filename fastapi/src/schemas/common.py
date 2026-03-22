@@ -9,4 +9,3 @@ class MessageResponse(BaseModel):
         description="Статус выполнения операции.",
         examples=["OK"],
     )
-

@@ -66,4 +66,3 @@ class TestUserRolesManagement:
         )
         assert remove_admin_role_response.status_code == 200, remove_admin_role_response.text
         assert "admin" not in remove_admin_role_response.json()["roles"]
-

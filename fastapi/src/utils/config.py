@@ -2,7 +2,6 @@ from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 ENV_FILE = PROJECT_ROOT / ".env"
 
@@ -36,5 +35,5 @@ class Settings(BaseSettings):
 
     log_level: str
 
-settings = Settings()
 
+settings = Settings()

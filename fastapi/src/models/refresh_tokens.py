@@ -23,4 +23,3 @@ class RefreshToken(Base):
         nullable=False,
     )
     is_revoked = Column(Boolean, default=False, nullable=False)
-

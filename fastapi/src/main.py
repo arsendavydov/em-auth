@@ -36,7 +36,7 @@ em-auth-service — backend-приложение для демонстрации
 - health/readiness endpoints для проверки состояния приложения.
 
 Технологии:
-- FastAPI, Python 3.11, PostgreSQL 16, SQLAlchemy, Alembic;
+- FastAPI, Python 3.12, PostgreSQL 16, SQLAlchemy, Alembic;
 - JWT, refresh tokens, bcrypt;
 - nginx, Kubernetes (k3s), CI/CD (GitHub Actions).
 
@@ -91,4 +91,3 @@ def create_app() -> FastAPI:
 
 
 app = create_app()
-

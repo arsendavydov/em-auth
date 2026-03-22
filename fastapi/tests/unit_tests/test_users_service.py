@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
@@ -26,8 +26,8 @@ def make_user(
         password_hash="hashed",
         deleted_at=deleted_at,
         is_active=is_active,
-        created_at=datetime.utcnow(),
-        updated_at=datetime.utcnow(),
+        created_at=datetime.now(UTC),
+        updated_at=datetime.now(UTC),
     )
 
 
@@ -82,7 +82,7 @@ async def test_get_target_or_404_raises_for_missing_or_deleted_user():
     with pytest.raises(HTTPException) as missing_exc:
         await service._get_target_or_404(1)
 
-    repository.get_by_id.return_value = make_user(2, deleted_at=datetime.utcnow())
+    repository.get_by_id.return_value = make_user(2, deleted_at=datetime.now(UTC))
     with pytest.raises(HTTPException) as deleted_exc:
         await service._get_target_or_404(2)
 
@@ -332,9 +332,7 @@ async def test_update_user_updates_fields_and_returns_refreshed_model():
 async def test_soft_delete_user_marks_user_inactive_and_revokes_tokens():
     repository = make_repository()
     service = UserService(repository)
-    service.refresh_token_repository = SimpleNamespace(
-        revoke_all_user_tokens=AsyncMock()
-    )
+    service.refresh_token_repository = SimpleNamespace(revoke_all_user_tokens=AsyncMock())
     target = make_user(12)
     service._get_target_or_404 = AsyncMock(return_value=target)
     service._ensure_can_delete_user = AsyncMock()

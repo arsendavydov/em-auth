@@ -43,15 +43,11 @@ async def test_login_returns_tokens(monkeypatch):
     monkeypatch.setattr("src.services.auth.generate_refresh_token", lambda: "refresh")
     monkeypatch.setattr("src.services.auth.get_refresh_token_expires_at", lambda: "expires")
 
-    result = await service.login(
-        LoginRequest(email="admin@em.ru", password="password123")
-    )
+    result = await service.login(LoginRequest(email="admin@em.ru", password="password123"))
 
     assert result.access_token == "access"
     assert result.refresh_token == "refresh"
-    service.refresh_token_repository.create_token.assert_awaited_once_with(
-        1, "refresh", "expires"
-    )
+    service.refresh_token_repository.create_token.assert_awaited_once_with(1, "refresh", "expires")
     repository.commit.assert_awaited_once()
 
 
@@ -117,9 +113,7 @@ async def test_refresh_returns_new_tokens(monkeypatch):
     assert result.access_token == "new-access"
     assert result.refresh_token == "new-refresh"
     service.refresh_token_repository.revoke_token.assert_awaited_once_with("old-refresh")
-    service.refresh_token_repository.create_token.assert_awaited_once_with(
-        5, "new-refresh", "expires"
-    )
+    service.refresh_token_repository.create_token.assert_awaited_once_with(5, "new-refresh", "expires")
     repository.commit.assert_awaited_once()
 
 

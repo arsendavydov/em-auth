@@ -23,4 +23,3 @@ class MockDocument(BaseModel):
     id: int = Field(description="Идентификатор mock-документа.", examples=[1])
     filename: str = Field(description="Имя файла документа.", examples=["security-policy.pdf"])
     owner: str = Field(description="Владелец документа.", examples=["admin1@em.ru"])
-

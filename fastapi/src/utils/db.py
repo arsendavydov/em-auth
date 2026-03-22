@@ -1,8 +1,9 @@
+from collections.abc import AsyncGenerator
+
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from src.utils.config import settings
-
 
 engine = create_async_engine(settings.database_url, echo=False, future=True)
 
@@ -13,7 +14,7 @@ AsyncSessionLocal = async_sessionmaker(
 )
 
 
-async def get_db() -> AsyncSession:
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """Yield-генератор асинхронной сессии базы данных для FastAPI dependency."""
 
     async with AsyncSessionLocal() as session:
@@ -31,4 +32,3 @@ async def close_engine() -> None:
     """Корректно закрывает SQLAlchemy engine при остановке приложения."""
 
     await engine.dispose()
-

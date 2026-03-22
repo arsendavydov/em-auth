@@ -31,4 +31,3 @@ class UsersMapper(DataMapper[User, UserRead]):
         data = schema_obj.model_dump(exclude=exclude, exclude_unset=True)
         data.update(kwargs)
         return data
-

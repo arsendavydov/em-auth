@@ -1,12 +1,12 @@
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.repositories.users import UserRepository
 from src.schemas.common import MessageResponse
 from src.schemas.users import UserCreate, UserRead, UserUpdate
 from src.services.users import UserService
 from src.utils.auth import RequestUser, get_current_user, require_admin_user
 from src.utils.db import get_db
-from src.repositories.users import UserRepository
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -39,10 +39,7 @@ def get_user_service(db: AsyncSession = Depends(get_db)) -> UserService:
     response_model=UserRead,
     status_code=status.HTTP_201_CREATED,
     summary="Зарегистрировать пользователя",
-    description=(
-        "Создает новую учетную запись пользователя. "
-        "Пароль и подтверждение пароля должны совпадать."
-    ),
+    description=("Создает новую учетную запись пользователя. Пароль и подтверждение пароля должны совпадать."),
     responses={
         400: USERS_400_RESPONSE,
     },
@@ -100,8 +97,7 @@ async def get_me(
     response_model=list[UserRead],
     summary="Получить список пользователей",
     description=(
-        "Возвращает список пользователей, доступных текущему пользователю "
-        "с учетом его роли и правил видимости."
+        "Возвращает список пользователей, доступных текущему пользователю с учетом его роли и правил видимости."
     ),
     responses={
         401: USERS_401_RESPONSE,
@@ -121,8 +117,7 @@ async def list_users(
     response_model=UserRead,
     summary="Получить пользователя по идентификатору",
     description=(
-        "Возвращает данные конкретного пользователя, если текущая роль "
-        "имеет право на просмотр этой учетной записи."
+        "Возвращает данные конкретного пользователя, если текущая роль имеет право на просмотр этой учетной записи."
     ),
     responses={
         401: USERS_401_RESPONSE,
@@ -164,10 +159,7 @@ async def update_me(
     "/{user_id}",
     response_model=UserRead,
     summary="Обновить пользователя",
-    description=(
-        "Частично обновляет другого пользователя, если это разрешено "
-        "ролью текущего пользователя."
-    ),
+    description=("Частично обновляет другого пользователя, если это разрешено ролью текущего пользователя."),
     responses={
         400: USERS_400_RESPONSE,
         401: USERS_401_RESPONSE,
@@ -191,8 +183,7 @@ async def update_user(
     response_model=MessageResponse,
     summary="Удалить свой аккаунт",
     description=(
-        "Выполняет мягкое удаление текущего пользователя, отзывает его "
-        "refresh токены и деактивирует учетную запись."
+        "Выполняет мягкое удаление текущего пользователя, отзывает его refresh токены и деактивирует учетную запись."
     ),
     responses={
         401: USERS_401_RESPONSE,
@@ -212,10 +203,7 @@ async def delete_me(
     "/{user_id}",
     response_model=MessageResponse,
     summary="Удалить пользователя",
-    description=(
-        "Выполняет мягкое удаление указанного пользователя, если роль "
-        "текущего пользователя это позволяет."
-    ),
+    description=("Выполняет мягкое удаление указанного пользователя, если роль текущего пользователя это позволяет."),
     responses={
         401: USERS_401_RESPONSE,
         403: USERS_403_RESPONSE,
@@ -281,4 +269,3 @@ async def remove_role_from_user(
     """Удаляет роль пользователя с учетом ролевых ограничений."""
 
     return await service.remove_role(current_user, user_id, role_name)
-

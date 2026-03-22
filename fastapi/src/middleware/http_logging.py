@@ -41,15 +41,9 @@ class HTTPLoggingMiddleware(BaseHTTPMiddleware):
         try:
             response = await call_next(request)
             status_code = response.status_code
-        except Exception:
-            raise
         finally:
             process_time = time.time() - start_time
-            message = (
-                f'{client_host} - "{method} {path} {protocol}" '
-                f"{status_code} {process_time:.3f}s"
-            )
+            message = f'{client_host} - "{method} {path} {protocol}" {status_code} {process_time:.3f}s'
             logger.info(message)
 
         return response
-

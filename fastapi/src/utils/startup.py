@@ -11,4 +11,3 @@ async def shutdown_handler() -> None:
     """Выполняет корректное завершение инфраструктурных ресурсов приложения."""
 
     await close_engine()
-

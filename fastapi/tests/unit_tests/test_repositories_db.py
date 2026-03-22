@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock
 
@@ -88,9 +88,7 @@ async def test_refresh_token_repository_methods():
                 FakeExecuteResult(scalar_one="stored-token"),
                 FakeExecuteResult(scalar_one=revocable_token),
                 FakeExecuteResult(scalar_one=None),
-                FakeExecuteResult(
-                    scalars_all=[token_a, token_b]
-                ),
+                FakeExecuteResult(scalars_all=[token_a, token_b]),
             ]
         ),
         add=MagicMock(),
@@ -98,7 +96,7 @@ async def test_refresh_token_repository_methods():
         refresh=AsyncMock(),
     )
     repository = RefreshTokenRepository(session)
-    expires_at = datetime.now(timezone.utc)
+    expires_at = datetime.now(UTC)
 
     created = await repository.create_token(1, "token", expires_at)
     assert created.user_id == 1
@@ -200,8 +198,8 @@ async def test_db_helpers_and_startup_shutdown(monkeypatch):
         async def __aexit__(self, exc_type, exc, tb):
             return False
 
-    monkeypatch.setattr(db_module, "AsyncSessionLocal", lambda: FakeSessionContext())
-    monkeypatch.setattr(db_module, "engine", SimpleNamespace(begin=lambda: FakeBeginContext(), dispose=AsyncMock()))
+    monkeypatch.setattr(db_module, "AsyncSessionLocal", FakeSessionContext)
+    monkeypatch.setattr(db_module, "engine", SimpleNamespace(begin=FakeBeginContext, dispose=AsyncMock()))
 
     generator = db_module.get_db()
     yielded = await anext(generator)

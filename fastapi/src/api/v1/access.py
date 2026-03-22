@@ -117,8 +117,7 @@ async def list_rules(
     status_code=status.HTTP_201_CREATED,
     summary="Создать правило доступа",
     description=(
-        "Создает новое правило доступа для выбранной роли, ресурса и действия. "
-        "Повторяющееся правило создать нельзя."
+        "Создает новое правило доступа для выбранной роли, ресурса и действия. Повторяющееся правило создать нельзя."
     ),
     responses={
         401: ACCESS_401_RESPONSE,
@@ -179,4 +178,3 @@ async def delete_rule(
 
     await service.delete_rule(rule_id)
     return MessageResponse()
-

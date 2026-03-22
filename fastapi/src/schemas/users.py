@@ -87,4 +87,3 @@ class UserRead(UserBase):
     )
 
     model_config = ConfigDict(from_attributes=True)
-

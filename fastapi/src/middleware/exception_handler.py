@@ -58,4 +58,3 @@ async def general_exception_handler(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={"detail": "Internal server error"},
     )
-

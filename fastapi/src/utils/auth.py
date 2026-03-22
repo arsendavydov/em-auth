@@ -1,6 +1,6 @@
-from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
 import secrets
+from dataclasses import dataclass
+from datetime import UTC, datetime, timedelta
 
 import jwt
 from fastapi import Depends, HTTPException, status
@@ -12,7 +12,6 @@ from src.models.users import User
 from src.repositories.users import UserRepository
 from src.utils.config import settings
 from src.utils.db import get_db
-
 
 security = HTTPBearer(auto_error=False)
 
@@ -39,9 +38,7 @@ class RequestUser:
 def create_access_token(user_id: int, roles: list[str]) -> str:
     """Создает JWT access token для пользователя."""
 
-    expire_at = datetime.now(timezone.utc) + timedelta(
-        minutes=settings.access_token_expire_minutes
-    )
+    expire_at = datetime.now(UTC) + timedelta(minutes=settings.access_token_expire_minutes)
     payload = {
         "sub": str(user_id),
         "roles": roles,
@@ -59,7 +56,7 @@ def generate_refresh_token() -> str:
 def get_refresh_token_expires_at() -> datetime:
     """Возвращает дату истечения refresh token."""
 
-    return datetime.now(timezone.utc) + timedelta(days=settings.refresh_token_expire_days)
+    return datetime.now(UTC) + timedelta(days=settings.refresh_token_expire_days)
 
 
 def decode_access_token(token: str) -> dict:
@@ -122,4 +119,3 @@ async def require_admin_user(
             detail="Forbidden",
         )
     return current_user
-

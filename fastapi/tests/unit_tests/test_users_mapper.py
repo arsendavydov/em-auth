@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from src.models.users import User
 from src.repositories.mappers.users_mapper import UsersMapper
@@ -6,7 +6,7 @@ from src.schemas.users import UserCreate, UserUpdate
 
 
 def test_to_schema_maps_user_model_to_user_read():
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     user = User(
         id=10,
         email="mapper@em.ru",

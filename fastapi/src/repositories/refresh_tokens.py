@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -38,7 +38,7 @@ class RefreshTokenRepository:
             and_(
                 RefreshToken.token == token,
                 RefreshToken.is_revoked.is_(False),
-                RefreshToken.expires_at > datetime.now(timezone.utc),
+                RefreshToken.expires_at > datetime.now(UTC),
             )
         )
         result = await self.session.execute(stmt)
@@ -66,4 +66,3 @@ class RefreshTokenRepository:
         for token in tokens:
             token.is_revoked = True
         await self.session.flush()
-

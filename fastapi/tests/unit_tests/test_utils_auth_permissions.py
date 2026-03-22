@@ -1,8 +1,7 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
-import jwt
 import pytest
 from fastapi import HTTPException
 from fastapi.security import HTTPAuthorizationCredentials
@@ -42,10 +41,10 @@ async def test_request_user_helpers_and_token_roundtrip():
 
 @pytest.mark.asyncio
 async def test_refresh_token_helpers_return_expected_values():
-    before = datetime.now(timezone.utc)
+    before = datetime.now(UTC)
     token = generate_refresh_token()
     expires_at = get_refresh_token_expires_at()
-    after = datetime.now(timezone.utc) + timedelta(days=6)
+    after = datetime.now(UTC) + timedelta(days=6)
 
     assert isinstance(token, str)
     assert len(token) >= 20

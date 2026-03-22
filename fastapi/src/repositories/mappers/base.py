@@ -1,4 +1,4 @@
-from typing import Any, Generic, TypeVar
+from typing import Any, TypeVar
 
 from sqlalchemy.orm import DeclarativeBase
 
@@ -6,7 +6,7 @@ OrmType = TypeVar("OrmType", bound=DeclarativeBase)
 SchemaType = TypeVar("SchemaType")
 
 
-class DataMapper(Generic[OrmType, SchemaType]):
+class DataMapper[OrmType: DeclarativeBase, SchemaType]:
     """Базовый интерфейс Data Mapper для преобразования ORM-объектов и схем."""
 
     @staticmethod
@@ -24,4 +24,3 @@ class DataMapper(Generic[OrmType, SchemaType]):
         """Преобразует схему запроса в словарь данных для ORM-модели."""
 
         raise NotImplementedError("Method from_schema() must be implemented")
-

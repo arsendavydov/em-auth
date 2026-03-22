@@ -1,10 +1,10 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from fastapi import HTTPException, status
 
-from src.repositories.refresh_tokens import RefreshTokenRepository
-from src.repositories.mappers.users_mapper import UsersMapper
 from src.models.users import User
+from src.repositories.mappers.users_mapper import UsersMapper
+from src.repositories.refresh_tokens import RefreshTokenRepository
 from src.repositories.users import UserRepository
 from src.schemas.users import UserCreate, UserRead, UserUpdate
 from src.utils.auth import RequestUser
@@ -265,7 +265,7 @@ class UserService:
         await self._ensure_can_delete_user(actor, target)
 
         target.is_active = False
-        target.deleted_at = datetime.now(timezone.utc)
+        target.deleted_at = datetime.now(UTC)
 
         await self.refresh_token_repository.revoke_all_user_tokens(target.id)
         await self.repository.commit()
@@ -335,4 +335,3 @@ class UserService:
         await self.repository.commit()
         refreshed_target = await self._get_target_or_404(target.id)
         return await self._build_user_read(refreshed_target)
-

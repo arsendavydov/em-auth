@@ -100,4 +100,3 @@ def get_logger(name: str) -> logging.Logger:
     """Возвращает именованный logger по имени модуля."""
 
     return logging.getLogger(name)
-

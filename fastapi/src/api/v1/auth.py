@@ -2,12 +2,12 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.repositories.users import UserRepository
-from src.schemas.common import MessageResponse
 from src.schemas.auth import (
     LoginRequest,
     RefreshTokenRequest,
     TokenResponse,
 )
+from src.schemas.common import MessageResponse
 from src.services.auth import AuthService
 from src.utils.auth import RequestUser, get_current_user
 from src.utils.db import get_db
@@ -31,8 +31,7 @@ def get_auth_service(db: AsyncSession = Depends(get_db)) -> AuthService:
     response_model=TokenResponse,
     summary="Войти в систему",
     description=(
-        "Аутентифицирует пользователя по email и паролю. "
-        "При успешной проверке возвращает access token и refresh token."
+        "Аутентифицирует пользователя по email и паролю. При успешной проверке возвращает access token и refresh token."
     ),
     responses={
         401: AUTH_401_RESPONSE,
@@ -63,10 +62,7 @@ async def login(
     "/refresh",
     response_model=TokenResponse,
     summary="Обновить токены",
-    description=(
-        "Проверяет refresh token, отзывает его и выдает новую пару "
-        "access/refresh токенов."
-    ),
+    description=("Проверяет refresh token, отзывает его и выдает новую пару access/refresh токенов."),
     responses={
         401: AUTH_401_RESPONSE,
     },
@@ -96,10 +92,7 @@ async def refresh(
     "/logout",
     response_model=MessageResponse,
     summary="Выйти из системы",
-    description=(
-        "Отзывает все refresh токены текущего пользователя и завершает "
-        "активную сессию."
-    ),
+    description=("Отзывает все refresh токены текущего пользователя и завершает активную сессию."),
     responses={
         401: AUTH_401_RESPONSE,
     },
@@ -121,4 +114,3 @@ async def logout(
 
     await service.logout(current_user.id)
     return MessageResponse()
-

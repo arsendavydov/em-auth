@@ -47,9 +47,7 @@ class AccessAdminRepository:
     async def get_rule(self, rule_id: int) -> AccessRule | None:
         """Возвращает правило доступа по идентификатору."""
 
-        result = await self.session.execute(
-            select(AccessRule).where(AccessRule.id == rule_id)
-        )
+        result = await self.session.execute(select(AccessRule).where(AccessRule.id == rule_id))
         return result.scalar_one_or_none()
 
     async def role_exists(self, role_id: int) -> bool:
@@ -61,17 +59,13 @@ class AccessAdminRepository:
     async def resource_exists(self, resource_id: int) -> bool:
         """Проверяет существование ресурса по идентификатору."""
 
-        result = await self.session.execute(
-            select(Resource.id).where(Resource.id == resource_id)
-        )
+        result = await self.session.execute(select(Resource.id).where(Resource.id == resource_id))
         return result.scalar_one_or_none() is not None
 
     async def permission_exists(self, permission_id: int) -> bool:
         """Проверяет существование действия по идентификатору."""
 
-        result = await self.session.execute(
-            select(Permission.id).where(Permission.id == permission_id)
-        )
+        result = await self.session.execute(select(Permission.id).where(Permission.id == permission_id))
         return result.scalar_one_or_none() is not None
 
     async def find_rule(
@@ -107,4 +101,3 @@ class AccessAdminRepository:
         """Фиксирует текущую транзакцию."""
 
         await self.session.commit()
-

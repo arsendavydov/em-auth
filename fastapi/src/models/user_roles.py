@@ -18,4 +18,3 @@ class UserRole(Base):
         ForeignKey("roles.id", ondelete="CASCADE"),
         primary_key=True,
     )
-

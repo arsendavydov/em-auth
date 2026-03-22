@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends
 from sqlalchemy import text
@@ -19,7 +19,7 @@ async def health() -> dict:
 
     return {
         "status": "ok",
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
     }
 
 
@@ -27,8 +27,7 @@ async def health() -> dict:
     "/ready",
     summary="Проверка готовности приложения",
     description=(
-        "Проверяет, готово ли приложение принимать запросы. "
-        "Для этого выполняется тестовый запрос к базе данных."
+        "Проверяет, готово ли приложение принимать запросы. Для этого выполняется тестовый запрос к базе данных."
     ),
 )
 async def ready(db: AsyncSession = Depends(get_db)) -> dict:
@@ -47,12 +46,11 @@ async def ready(db: AsyncSession = Depends(get_db)) -> dict:
         result.scalar()
         return {
             "ready": True,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         }
     except Exception as exc:
         return {
             "ready": False,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "error": str(exc),
         }
-

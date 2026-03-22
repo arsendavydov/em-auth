@@ -8,6 +8,7 @@
 .env.*
 !.env.example
 em-auth.prod.env
+.venv312
 
 # Python cache
 __pycache__/
@@ -46,5 +47,4 @@ terminals/
 agent-transcripts/
 
 todo.md
-backlog.md
 em-auth.credentials.local.md

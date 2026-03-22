@@ -1,5 +1,3 @@
-from typing import Optional
-
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -14,36 +12,24 @@ class UserRepository:
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
-    async def get_by_email(self, email: str) -> Optional[User]:
+    async def get_by_email(self, email: str) -> User | None:
         """Возвращает пользователя по email или `None`, если запись не найдена."""
 
-        stmt = (
-            select(User)
-            .where(User.email == email)
-            .execution_options(populate_existing=True)
-        )
+        stmt = select(User).where(User.email == email).execution_options(populate_existing=True)
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def get_by_id(self, user_id: int) -> Optional[User]:
+    async def get_by_id(self, user_id: int) -> User | None:
         """Возвращает пользователя по идентификатору или `None`, если запись не найдена."""
 
-        stmt = (
-            select(User)
-            .where(User.id == user_id)
-            .execution_options(populate_existing=True)
-        )
+        stmt = select(User).where(User.id == user_id).execution_options(populate_existing=True)
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
 
     async def list_active_users(self) -> list[User]:
         """Возвращает список пользователей без мягкого удаления."""
 
-        stmt = (
-            select(User)
-            .where(User.deleted_at.is_(None))
-            .order_by(User.id)
-        )
+        stmt = select(User).where(User.deleted_at.is_(None)).order_by(User.id)
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
 
@@ -59,7 +45,7 @@ class UserRepository:
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
 
-    async def get_role_by_name(self, role_name: str) -> Optional[Role]:
+    async def get_role_by_name(self, role_name: str) -> Role | None:
         """Возвращает роль по имени или `None`, если запись не найдена."""
 
         stmt = select(Role).where(Role.name == role_name)
@@ -115,5 +101,3 @@ class UserRepository:
         """Фиксирует текущую транзакцию."""
 
         await self.session.commit()
-
-

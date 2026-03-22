@@ -12,3 +12,5 @@ email-validator==2.1.0.post1
 pytest
 pytest-asyncio
 httpx
+ruff>=0.6.0
+pyright>=1.1.0

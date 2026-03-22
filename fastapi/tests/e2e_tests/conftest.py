@@ -33,9 +33,7 @@ REQUIRED_ENV_VARS = {
 
 missing_env = [name for name, value in REQUIRED_ENV_VARS.items() if not value]
 if missing_env:
-    raise ValueError(
-        "Missing required test env vars in .env: " + ", ".join(sorted(missing_env))
-    )
+    raise ValueError("Missing required test env vars in .env: " + ", ".join(sorted(missing_env)))
 
 
 def unique_email(prefix: str = "e2e") -> str:
