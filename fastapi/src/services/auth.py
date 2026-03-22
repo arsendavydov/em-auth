@@ -1,3 +1,11 @@
+"""
+Сервис входа, обновления сессии и выхода.
+
+Вход: проверка пароля → JWT доступа + случайный refresh, запись refresh в БД.
+Обновление: одноразовая ротация refresh (старый отзывается → новый в БД) + новый JWT доступа.
+Выход: отзыв всех токенов обновления; JWT доступа до exp ещё декодируется, но сессию продлить нельзя.
+"""
+
 from fastapi import HTTPException, status
 
 from src.repositories.refresh_tokens import RefreshTokenRepository
@@ -12,7 +20,7 @@ from src.utils.security import verify_password
 
 
 class AuthService:
-    """Сервис аутентификации и управления refresh токенами."""
+    """Сервис аутентификации и управления токенами обновления сессии (refresh)."""
 
     def __init__(self, repository: UserRepository) -> None:
         self.repository = repository
@@ -26,7 +34,7 @@ class AuthService:
             data: Данные для входа пользователя.
 
         Returns:
-            Пара access и refresh токенов.
+            Пара токенов: доступ (JWT) и обновление сессии (refresh).
 
         Raises:
             HTTPException: 401 если пользователь не найден, деактивирован или пароль неверен.
@@ -60,16 +68,16 @@ class AuthService:
 
     async def refresh(self, data: RefreshTokenRequest) -> TokenResponse:
         """
-        Обновляет пару токенов по валидному refresh token.
+        Обновляет пару токенов по валидному токену обновления.
 
         Args:
-            data: Тело запроса с refresh token.
+            data: Тело запроса с токеном обновления.
 
         Returns:
-            Новая пара access и refresh токенов.
+            Новая пара токенов: доступ и обновление сессии.
 
         Raises:
-            HTTPException: 401 если refresh token невалиден или пользователь недоступен.
+            HTTPException: 401 если токен обновления невалиден или пользователь недоступен.
         """
 
         stored_token = await self.refresh_token_repository.get_by_token(data.refresh_token)
@@ -86,6 +94,7 @@ class AuthService:
                 detail="User is not available",
             )
 
+        # Ротация: использованный refresh недействителен — защита от повторной выдачи пары.
         await self.refresh_token_repository.revoke_token(data.refresh_token)
 
         roles = await self.repository.get_role_names(user.id)
@@ -102,7 +111,7 @@ class AuthService:
 
     async def logout(self, user_id: int) -> None:
         """
-        Выполняет logout пользователя, отзывая все его refresh токены.
+        Выполняет выход пользователя, отзывая все его токены обновления (refresh).
 
         Args:
             user_id: Идентификатор пользователя.

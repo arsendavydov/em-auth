@@ -4,7 +4,7 @@ from src.models.base import Base
 
 
 class RefreshToken(Base):
-    """ORM-модель refresh token пользователя."""
+    """ORM-модель токена обновления сессии пользователя (refresh, не JWT)."""
 
     __tablename__ = "refresh_tokens"
 

@@ -17,23 +17,23 @@ class LoginRequest(BaseModel):
 
 
 class RefreshTokenRequest(BaseModel):
-    """Тело запроса для обновления access token."""
+    """Тело запроса для обновления токена доступа."""
 
     refresh_token: str = Field(
-        description="Refresh token, выданный при login или предыдущем refresh.",
+        description="Токен обновления сессии (refresh), выданный при входе или при предыдущем обновлении пары.",
         examples=["refresh_token_value"],
     )
 
 
 class TokenResponse(BaseModel):
-    """Ответ с парой access и refresh токенов."""
+    """Ответ с парой токенов: доступ (JWT) и обновление сессии (refresh)."""
 
     access_token: str = Field(
-        description="JWT access token для авторизации в защищенных ручках.",
+        description="JWT токен доступа для авторизации в защищённых ручках.",
         examples=["access_token_value"],
     )
     refresh_token: str = Field(
-        description="Refresh token для получения новой пары токенов.",
+        description="Токен обновления для получения новой пары токенов.",
         examples=["refresh_token_value"],
     )
     token_type: str = Field(

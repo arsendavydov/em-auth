@@ -1,3 +1,8 @@
+"""
+Конфигурация Alembic: sync URL из настроек Postgres, target_metadata — все модели через Base.metadata.
+
+Импорт `src.models.base` подтягивает регистрацию таблиц в metadata.
+"""
 from __future__ import annotations
 
 from logging.config import fileConfig

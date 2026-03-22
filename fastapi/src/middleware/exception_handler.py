@@ -1,3 +1,9 @@
+"""
+Единый JSON-ответ на ошибки: БД, доменные исключения, всё остальное → 500.
+
+Тела ответов на английском — контракт API для клиентов; комментарии здесь на русском.
+"""
+
 from fastapi import Request, status
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import DatabaseError, IntegrityError, OperationalError
@@ -16,12 +22,14 @@ async def database_exception_handler(
 
     logger.error(f"Database error: {exc}", exc_info=True)
 
+    # Нарушение уникальности / FK — клиенту отдаём 409
     if isinstance(exc, IntegrityError):
         return JSONResponse(
             status_code=status.HTTP_409_CONFLICT,
             content={"detail": "Data integrity violation"},
         )
 
+    # Сеть, недоступность Postgres и т.п.
     if isinstance(exc, OperationalError):
         return JSONResponse(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,

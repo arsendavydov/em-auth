@@ -1,3 +1,12 @@
+"""
+Аутентификация запросов по Bearer JWT и вспомогательные сущности.
+
+Поток: заголовок Authorization → декод JWT (только sub + проверка подписи/exp) → загрузка User из БД
+→ роли для RequestUser всегда из БД, не из payload JWT (см. get_current_user).
+
+Функции create_access_token / decode_access_token — синхронные: PyJWT без I/O; async только get_current_user (БД).
+"""
+
 import secrets
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
@@ -36,9 +45,11 @@ class RequestUser:
 
 
 def create_access_token(user_id: int, roles: list[str]) -> str:
-    """Создает JWT access token для пользователя."""
+    """Создаёт JWT токен доступа для пользователя."""
 
     expire_at = datetime.now(UTC) + timedelta(minutes=settings.access_token_expire_minutes)
+    # В payload кладём roles для прозрачности/отладки; при запросе get_current_user роли
+    # перечитываются из БД — источник правды по системным ролям там.
     payload = {
         "sub": str(user_id),
         "roles": roles,
@@ -48,19 +59,19 @@ def create_access_token(user_id: int, roles: list[str]) -> str:
 
 
 def generate_refresh_token() -> str:
-    """Генерирует криптографически стойкий refresh token."""
+    """Генерирует криптографически стойкий токен обновления сессии (refresh)."""
 
     return secrets.token_urlsafe(32)
 
 
 def get_refresh_token_expires_at() -> datetime:
-    """Возвращает дату истечения refresh token."""
+    """Возвращает момент истечения срока токена обновления."""
 
     return datetime.now(UTC) + timedelta(days=settings.refresh_token_expire_days)
 
 
 def decode_access_token(token: str) -> dict:
-    """Декодирует JWT access token и возвращает payload."""
+    """Декодирует JWT токен доступа и возвращает payload."""
 
     return jwt.decode(token, settings.secret_key, algorithms=[settings.jwt_algorithm])
 
@@ -84,6 +95,7 @@ async def get_current_user(
 
     try:
         payload = decode_access_token(credentials.credentials)
+        # Используем только sub; роли из JWT не доверяем — см. create_access_token.
         user_id = int(payload["sub"])
     except (InvalidTokenError, KeyError, ValueError):
         raise HTTPException(
@@ -99,6 +111,7 @@ async def get_current_user(
             detail="User is not available",
         )
 
+    # Актуальные системные роли только из БД (user_roles + roles).
     roles = await repository.get_role_names(user.id)
     return RequestUser(user=user, roles=roles)
 

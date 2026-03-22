@@ -1,3 +1,9 @@
+"""
+Базовый класс паттерна Data Mapper: ORM ↔ Pydantic без логики в моделях.
+
+Конкретные мапперы — в том же пакете (например UsersMapper).
+"""
+
 from typing import Any, TypeVar
 
 from sqlalchemy.orm import DeclarativeBase
@@ -13,7 +19,7 @@ class DataMapper[OrmType: DeclarativeBase, SchemaType]:
     def to_schema(orm_obj: OrmType, **kwargs: Any) -> SchemaType:
         """Преобразует ORM-объект в схему ответа."""
 
-        raise NotImplementedError("Method to_schema() must be implemented")
+        raise NotImplementedError("Подкласс должен реализовать to_schema()")
 
     @staticmethod
     def from_schema(
@@ -23,4 +29,4 @@ class DataMapper[OrmType: DeclarativeBase, SchemaType]:
     ) -> dict[str, Any]:
         """Преобразует схему запроса в словарь данных для ORM-модели."""
 
-        raise NotImplementedError("Method from_schema() must be implemented")
+        raise NotImplementedError("Подкласс должен реализовать from_schema()")

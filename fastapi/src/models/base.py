@@ -1,3 +1,7 @@
+"""
+Общий DeclarativeBase и один MetaData для всех таблиц (одна схема в Alembic).
+"""
+
 from sqlalchemy import MetaData
 from sqlalchemy.orm import DeclarativeBase
 

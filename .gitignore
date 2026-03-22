@@ -48,3 +48,6 @@ agent-transcripts/
 
 todo.md
 em-auth.credentials.local.md
+
+# Личные заметки к разбору проекта (не коммитить)
+docs/AUTH_JWT_AND_ROLES.md

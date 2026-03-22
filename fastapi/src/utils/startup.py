@@ -1,3 +1,9 @@
+"""
+Хуки жизненного цикла приложения: проверка БД при старте, закрытие пула при остановке.
+
+Вызываются из main.lifespan.
+"""
+
 from src.utils.db import check_connection, close_engine
 
 

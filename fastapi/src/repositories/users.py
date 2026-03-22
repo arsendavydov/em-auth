@@ -1,3 +1,9 @@
+"""
+Запросы к users и связям user_roles; используется сервисами и get_current_user (роли).
+
+populate_existing в get_by_* — подтягивать свежие данные при повторных запросах в той же сессии.
+"""
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -15,6 +21,7 @@ class UserRepository:
     async def get_by_email(self, email: str) -> User | None:
         """Возвращает пользователя по email или `None`, если запись не найдена."""
 
+        # populate_existing: если объект User уже в сессии, обновить из результата SELECT.
         stmt = select(User).where(User.email == email).execution_options(populate_existing=True)
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
@@ -22,6 +29,7 @@ class UserRepository:
     async def get_by_id(self, user_id: int) -> User | None:
         """Возвращает пользователя по идентификатору или `None`, если запись не найдена."""
 
+        # См. get_by_email — тот же смысл populate_existing.
         stmt = select(User).where(User.id == user_id).execution_options(populate_existing=True)
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()

@@ -1,3 +1,9 @@
+"""
+Настройка логирования: файл с ротацией + консоль, опционально JSON (LOG_FORMAT_JSON).
+
+Уровень берётся из settings.log_level; шумный SQLAlchemy engine приглушён до WARNING.
+"""
+
 import json
 import logging
 import os
@@ -44,7 +50,7 @@ def _create_handlers(
     log_file: Path,
     level: int,
 ) -> tuple[logging.FileHandler, logging.StreamHandler[Any]]:
-    """Создает file и console handlers с единым форматированием."""
+    """Создаёт обработчики: запись в файл и вывод в stdout с одним форматтером."""
 
     formatter: logging.Formatter
     if _use_json_logs():

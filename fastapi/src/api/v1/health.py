@@ -1,3 +1,9 @@
+"""
+Публичные проверки живости: /health без БД, /ready с запросом SELECT 1.
+
+Kubernetes liveness/readiness в манифестах смотрят на эти пути.
+"""
+
 from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends

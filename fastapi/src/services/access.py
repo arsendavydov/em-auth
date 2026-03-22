@@ -1,3 +1,9 @@
+"""
+Слой над AccessAdminRepository: маппинг ORM → Pydantic, коды ошибок 404/409.
+
+Не содержит проверки «текущий пользователь — админ» — это Depends(require_admin_user) в роутере.
+"""
+
 from fastapi import HTTPException
 
 from src.models.access_rules import AccessRule

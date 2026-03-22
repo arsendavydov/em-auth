@@ -1,3 +1,9 @@
+"""
+Демонстрационные «бизнес»-ручки: доступ режется через require_permission и таблицу access_rules.
+
+Данные в ответе статичны; ценность — проверка RBAC на реальных HTTP-запросах.
+"""
+
 from fastapi import APIRouter, Depends
 
 from src.schemas.mock import MockDocument, MockProject, MockReport

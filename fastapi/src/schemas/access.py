@@ -28,7 +28,7 @@ class ResourceRead(BaseModel):
 class PermissionRead(BaseModel):
     """Схема permission в ответах admin API."""
 
-    id: int = Field(description="Идентификатор permission.", examples=[1])
+    id: int = Field(description="Идентификатор действия (permission) в БД.", examples=[1])
     code: str = Field(description="Код действия в системе доступа.", examples=["read"])
     description: str | None = Field(
         default=None,

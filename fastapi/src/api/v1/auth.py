@@ -1,3 +1,9 @@
+"""
+HTTP-ручки входа, обновления пары токенов и выхода.
+
+Тело ответов об ошибках — на английском (единый контракт); бизнес-логика в AuthService.
+"""
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -31,7 +37,7 @@ def get_auth_service(db: AsyncSession = Depends(get_db)) -> AuthService:
     response_model=TokenResponse,
     summary="Войти в систему",
     description=(
-        "Аутентифицирует пользователя по email и паролю. При успешной проверке возвращает access token и refresh token."
+        "Аутентифицирует пользователя по email и паролю. При успехе возвращает JWT доступа и токен обновления сессии (refresh)."
     ),
     responses={
         401: AUTH_401_RESPONSE,
@@ -49,7 +55,7 @@ async def login(
         service: Сервис аутентификации.
 
     Returns:
-        Пара access и refresh токенов.
+        Пара токенов: JWT доступа и обновления сессии (refresh).
 
     Raises:
         HTTPException: 401 если email или пароль неверны.
@@ -62,7 +68,9 @@ async def login(
     "/refresh",
     response_model=TokenResponse,
     summary="Обновить токены",
-    description=("Проверяет refresh token, отзывает его и выдает новую пару access/refresh токенов."),
+    description=(
+        "Проверяет токен обновления (refresh), отзывает его и выдаёт новую пару: JWT доступа и новый refresh."
+    ),
     responses={
         401: AUTH_401_RESPONSE,
     },
@@ -72,17 +80,17 @@ async def refresh(
     service: AuthService = Depends(get_auth_service),
 ) -> TokenResponse:
     """
-    Обновляет пару токенов по валидному refresh token.
+    Обновляет пару токенов по валидному токену обновления (refresh).
 
     Args:
-        payload: Тело запроса с refresh token.
+        payload: Тело запроса с токеном обновления.
         service: Сервис аутентификации.
 
     Returns:
-        Новая пара access и refresh токенов.
+        Новая пара: JWT доступа и токен обновления.
 
     Raises:
-        HTTPException: 401 если refresh token невалиден или истек.
+        HTTPException: 401 если токен обновления невалиден или истёк.
     """
 
     return await service.refresh(payload)
@@ -92,7 +100,7 @@ async def refresh(
     "/logout",
     response_model=MessageResponse,
     summary="Выйти из системы",
-    description=("Отзывает все refresh токены текущего пользователя и завершает активную сессию."),
+    description=("Отзывает все токены обновления сессии (refresh) текущего пользователя и завершает активную сессию."),
     responses={
         401: AUTH_401_RESPONSE,
     },
@@ -102,7 +110,7 @@ async def logout(
     service: AuthService = Depends(get_auth_service),
 ) -> MessageResponse:
     """
-    Выполняет logout текущего пользователя.
+    Выполняет выход текущего пользователя из системы.
 
     Args:
         current_user: Текущий аутентифицированный пользователь.

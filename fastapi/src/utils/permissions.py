@@ -1,3 +1,10 @@
+"""
+Зависимости авторизации к ресурсам по модели RBAC (таблицы access_rules).
+
+Это не то же самое, что матрица «кто может редактировать пользователя» в UserService:
+там системные роли (admin/superadmin/…); здесь — произвольные ресурсы и действия из БД.
+"""
+
 from collections.abc import Callable
 
 from fastapi import Depends, HTTPException, status
@@ -20,7 +27,7 @@ def require_permission(
         permission_code: Код действия в системе доступа.
 
     Returns:
-        FastAPI dependency, проверяющую право доступа.
+        Зависимость FastAPI, проверяющую право доступа.
     """
 
     async def dependency(
@@ -29,6 +36,7 @@ def require_permission(
     ) -> RequestUser:
         """Проверяет доступ текущего пользователя к ресурсу и действию."""
 
+        # Запрос в БД: есть ли у любой роли пользователя разрешающее правило.
         access_repository = AccessControlRepository(db)
 
         has_access = await access_repository.has_permission(

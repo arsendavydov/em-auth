@@ -1,4 +1,4 @@
-"""Seed roles, permissions, resources and mock access rules
+"""Сид: роли, действия (permissions), ресурсы и mock-правила доступа.
 
 Revision ID: 20260317_0004
 Revises: 20260317_0003

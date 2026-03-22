@@ -1,3 +1,10 @@
+"""
+Хранение токенов обновления сессии в БД (не JWT): случайная строка, срок действия, флаг отзыва.
+
+Отзыв: выход из системы (все токены пользователя), обновление пары (ротация — один токен — одна смена пары),
+мягкое удаление пользователя в UserService.
+"""
+
 from datetime import UTC, datetime
 
 from sqlalchemy import and_, select
@@ -7,7 +14,7 @@ from src.models.refresh_tokens import RefreshToken
 
 
 class RefreshTokenRepository:
-    """Репозиторий для работы с refresh токенами пользователя."""
+    """Репозиторий для работы с токенами обновления сессии пользователя."""
 
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
@@ -18,7 +25,7 @@ class RefreshTokenRepository:
         token: str,
         expires_at: datetime,
     ) -> RefreshToken:
-        """Создает и возвращает новый refresh token."""
+        """Создаёт и возвращает новую запись токена обновления."""
 
         refresh_token = RefreshToken(
             user_id=user_id,
@@ -32,7 +39,7 @@ class RefreshTokenRepository:
         return refresh_token
 
     async def get_by_token(self, token: str) -> RefreshToken | None:
-        """Возвращает активный и неистекший refresh token по его строковому значению."""
+        """Возвращает активный и неистёкший токен обновления по строковому значению."""
 
         stmt = select(RefreshToken).where(
             and_(
@@ -45,7 +52,7 @@ class RefreshTokenRepository:
         return result.scalar_one_or_none()
 
     async def revoke_token(self, token: str) -> None:
-        """Отзывает один refresh token, если он существует и еще активен."""
+        """Отзывает один токен обновления, если он существует и ещё активен."""
 
         refresh_token = await self.get_by_token(token)
         if refresh_token is not None:
@@ -53,7 +60,7 @@ class RefreshTokenRepository:
             await self.session.flush()
 
     async def revoke_all_user_tokens(self, user_id: int) -> None:
-        """Отзывает все активные refresh токены указанного пользователя."""
+        """Отзывает все активные токены обновления указанного пользователя."""
 
         stmt = select(RefreshToken).where(
             and_(

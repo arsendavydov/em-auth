@@ -1,3 +1,9 @@
+"""
+CRUD справочников RBAC и правил для админов (не путать с AccessControlRepository.has_permission).
+
+Здесь полные списки и изменение правил; проверка «может ли пользователь X» — в access_control.
+"""
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 

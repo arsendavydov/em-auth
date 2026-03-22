@@ -1,4 +1,4 @@
-"""Create refresh_tokens table
+"""Создание таблицы refresh_tokens.
 
 Revision ID: 20260317_0003
 Revises: 20260316_0002

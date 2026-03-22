@@ -1,3 +1,9 @@
+"""
+Локальное заполнение тестовых пользователей по переменным TEST_*_EMAIL из .env.
+
+Запуск из корня проекта; нужны TEST_PASSWORD и хотя бы один email. Не для продакшена.
+"""
+
 import asyncio
 import os
 
@@ -8,7 +14,6 @@ from src.models.user_roles import UserRole
 from src.models.users import User
 from src.utils.db import AsyncSessionLocal
 from src.utils.security import hash_password
-
 
 SEEDED_USERS = (
     ("TEST_ADMIN_EMAIL", "admin", "Admin", "One"),
@@ -23,7 +28,7 @@ SEEDED_USERS = (
 async def seed_local_data() -> None:
     test_password = os.getenv("TEST_PASSWORD")
     if not test_password:
-        raise ValueError("TEST_PASSWORD must be set in .env for local seed")
+        raise ValueError("В .env должен быть задан TEST_PASSWORD для локального сида")
 
     async with AsyncSessionLocal() as session:
         roles_result = await session.execute(select(Role))

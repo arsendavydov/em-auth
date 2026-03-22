@@ -1,3 +1,10 @@
+"""
+Бизнес-правила над пользователями и системные роли (не путать с RBAC access_rules / mock).
+
+Матрица видимости/редактирования/удаления и управление ролями — здесь.
+Права на произвольные ресурсы (mock, и т.д.) — require_permission + AccessControlRepository.
+"""
+
 from datetime import UTC, datetime
 
 from fastapi import HTTPException, status

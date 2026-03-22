@@ -1,3 +1,9 @@
+"""
+Access-лог в стиле nginx: клиент, метод, путь, статус, длительность.
+
+Дублирующий лог uvicorn access отключён в logger.setup_logging (propagate), чтобы одна строка на запрос.
+"""
+
 import time
 from collections.abc import Awaitable, Callable
 
@@ -35,6 +41,7 @@ class HTTPLoggingMiddleware(BaseHTTPMiddleware):
         if not str(protocol).startswith("HTTP/"):
             protocol = f"HTTP/{protocol}"
 
+        # До вызова приложения считаем 500; при успехе перезапишем из response.
         status_code = 500
         response: Response | None = None
 
@@ -42,6 +49,7 @@ class HTTPLoggingMiddleware(BaseHTTPMiddleware):
             response = await call_next(request)
             status_code = response.status_code
         finally:
+            # Лог пишем и при исключении внутри call_next (статус останется 500).
             process_time = time.time() - start_time
             message = f'{client_host} - "{method} {path} {protocol}" {status_code} {process_time:.3f}s'
             logger.info(message)

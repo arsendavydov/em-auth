@@ -561,3 +561,8 @@
 - **CI**: шаг «Run unit tests and linters» в `.github/workflows/deploy.yml` гоняет тесты и линтеры **до** сборки образов и выката в k3s; при падении lint — деплой не выполняется.
 - **Документация**: в `README.md` описаны команды линтера, CI-gate и зависимость образа от `libatomic1` для Pyright в контейнере.
 
+### 34. Комментарии в коде (auth, роли, RBAC)
+
+- Расширены **модульные комментарии** (docstring уровня файла) в: `utils/auth.py`, `services/auth.py`, `services/users.py`, `utils/permissions.py`, `repositories/access_control.py`, `repositories/refresh_tokens.py`, `api/v1/auth.py`.
+- Личные конспекты к собеседованию при желании хранить локально в `docs/` (например `AUTH_JWT_AND_ROLES.md`) — файл в `.gitignore`, в репозиторий не попадает.
+

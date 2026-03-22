@@ -1,3 +1,9 @@
+"""
+Админ-API для справочников RBAC: роли, ресурсы, действия, правила access_rules.
+
+Доступ только с require_admin_user (роли admin/superadmin). См. также require_permission для mock.
+"""
+
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 

@@ -1,4 +1,4 @@
-"""Add deleted_at column to users
+"""Добавление колонки deleted_at в таблицу users.
 
 Revision ID: 20260316_0002
 Revises: 20260316_0001

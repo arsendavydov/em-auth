@@ -1,3 +1,9 @@
+"""
+Маппинг User ORM ↔ схемы регистрации/чтения/обновления.
+
+Роли в UserRead не лежат в таблице users — подмешиваются аргументом roles.
+"""
+
 from typing import Any
 
 from src.models.users import User
@@ -8,6 +14,7 @@ from src.schemas.users import UserCreate, UserRead, UserUpdate
 class UsersMapper(DataMapper[User, UserRead]):
     @staticmethod
     def to_schema(orm_obj: User, roles: list[str] | None = None) -> UserRead:
+        """Собирает UserRead; список ролей передаётся отдельно из репозитория."""
         return UserRead(
             id=orm_obj.id,
             email=orm_obj.email,
@@ -27,6 +34,7 @@ class UsersMapper(DataMapper[User, UserRead]):
         exclude: set[str] | None = None,
         **kwargs: Any,
     ) -> dict[str, Any]:
+        """Словарь полей для конструктора User; exclude — пароли и т.п.; kwargs — password_hash."""
         exclude = exclude or set()
         data = schema_obj.model_dump(exclude=exclude, exclude_unset=True)
         data.update(kwargs)

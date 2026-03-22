@@ -8,6 +8,7 @@ class AccessRule(Base):
 
     __tablename__ = "access_rules"
 
+    # Связка «роль может/не может permission на resource»; is_allowed — итоговый флаг
     id = Column(Integer, primary_key=True, index=True)
     role_id = Column(Integer, ForeignKey("roles.id", ondelete="CASCADE"), nullable=False)
     resource_id = Column(

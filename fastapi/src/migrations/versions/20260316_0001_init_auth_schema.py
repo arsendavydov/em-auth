@@ -1,4 +1,4 @@
-"""Initial auth and access control schema.
+"""Начальная схема аутентификации и контроля доступа.
 
 Revision ID: 20260316_0001
 Revises: 

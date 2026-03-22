@@ -1,3 +1,9 @@
+"""
+Пользователи: регистрация, профиль, список, CRUD по id, назначение ролей.
+
+Бизнес-ограничения по ролям — в UserService; здесь только HTTP-слой и Depends.
+"""
+
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 

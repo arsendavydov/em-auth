@@ -1,3 +1,9 @@
+"""
+Асинхронный SQLAlchemy: один engine на процесс, фабрика сессий, dependency get_db для FastAPI.
+
+Сессия на запрос — yield в get_db; после ответа контекстный менеджер закрывает сессию.
+"""
+
 from collections.abc import AsyncGenerator
 
 from sqlalchemy import text
@@ -15,7 +21,7 @@ AsyncSessionLocal = async_sessionmaker(
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
-    """Yield-генератор асинхронной сессии базы данных для FastAPI dependency."""
+    """Асинхронная сессия БД для Depends(get_db): по одной на HTTP-запрос."""
 
     async with AsyncSessionLocal() as session:
         yield session

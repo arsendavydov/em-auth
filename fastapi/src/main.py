@@ -1,3 +1,9 @@
+"""
+Точка входа FastAPI-приложения: сборка роутеров, middleware, обработчиков ошибок, lifespan.
+
+Порядок важен: middleware → exception handlers → include_router (префикс /api/v1).
+"""
+
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
@@ -28,16 +34,16 @@ em-auth-service — backend-приложение для демонстрации
 и авторизации поверх FastAPI и PostgreSQL.
 
 Основные возможности:
-- регистрация, login, refresh и logout;
+- регистрация, вход, обновление сессии по refresh и выход;
 - управление профилем пользователя и мягкое удаление аккаунта;
 - ролевая модель доступа к пользователям;
 - система правил доступа (RBAC) к mock-ресурсам;
-- admin API для управления правилами доступа;
-- health/readiness endpoints для проверки состояния приложения.
+- API администрирования для управления правилами доступа;
+- эндпоинты проверки живости и готовности (/health, /ready).
 
 Технологии:
 - FastAPI, Python 3.12, PostgreSQL 16, SQLAlchemy, Alembic;
-- JWT, refresh tokens, bcrypt;
+- JWT, токены обновления (refresh), bcrypt;
 - nginx, Kubernetes (k3s), CI/CD (GitHub Actions).
 
 Исходный код и документация: [github.com/arsendavydov/em-auth](https://github.com/arsendavydov/em-auth/)
@@ -73,14 +79,16 @@ def create_app() -> FastAPI:
         servers=[
             {
                 "url": settings.root_path or "/apps/em-auth",
-                "description": "Production server",
+                "description": "Продакшен-сервер",
             },
         ],
     )
+    # Сначала логирование запросов, затем перехват исключений на уровне приложения.
     app.add_middleware(HTTPLoggingMiddleware)
     app.add_exception_handler(DatabaseError, database_exception_handler)
     app.add_exception_handler(DomainException, domain_exception_handler)
     app.add_exception_handler(Exception, general_exception_handler)
+    # Health без авторизации — первым в списке для прозрачности.
     app.include_router(health_v1_router, prefix="/api/v1")
     app.include_router(auth_v1_router, prefix="/api/v1")
     app.include_router(access_v1_router, prefix="/api/v1")

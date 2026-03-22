@@ -1,3 +1,10 @@
+"""
+Проверка «разрешено ли действие над ресурсом» через таблицу access_rules.
+
+Цепочка: пользователь → user_roles → роль → access_rules + resource.code + permission.code.
+Достаточно одного правила с is_allowed=True (хотя бы одна роль пользователя даёт доступ).
+"""
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -22,6 +29,7 @@ class AccessControlRepository:
     ) -> bool:
         """Проверяет наличие разрешающего правила для пользователя, ресурса и действия."""
 
+        # Один запрос: все роли пользователя OR-ятся через join к access_rules.
         stmt = (
             select(AccessRule.id)
             .join(Role, Role.id == AccessRule.role_id)
