@@ -47,6 +47,7 @@ jobs:
 
       - name: Run unit tests and linters
         run: |
+          set -e
           export PROJECT_NAME="em-auth-service"
           export ENVIRONMENT="ci"
           export API_HOST="0.0.0.0"
@@ -64,12 +65,36 @@ jobs:
           export JWT_ALGORITHM="HS256"
           export LOG_LEVEL="info"
 
+          echo "::group::Pytest (unit-тесты)"
+          echo ">>> Запуск: pytest fastapi/tests/unit_tests"
           .venv312/bin/pytest fastapi/tests/unit_tests -v --tb=short --color=yes
+          echo "✅ Pytest unit-тесты: пройдено"
+          echo "::endgroup::"
 
           cd fastapi
+
+          echo "::group::Ruff — проверка стиля и ошибок (ruff check)"
+          echo ">>> Запуск: ruff check src tests"
           ../.venv312/bin/ruff check src tests
+          echo "✅ Ruff check: пройдено"
+          echo "::endgroup::"
+
+          echo "::group::Ruff — проверка форматирования (ruff format --check)"
+          echo ">>> Запуск: ruff format --check src tests"
           ../.venv312/bin/ruff format --check src tests
+          echo "✅ Ruff format --check: пройдено"
+          echo "::endgroup::"
+
+          echo "::group::Pyright — проверка типов"
+          echo ">>> Запуск: python -m pyright src"
           ../.venv312/bin/python -m pyright src
+          echo "✅ Pyright: пройдено"
+          echo "::endgroup::"
+
+          echo ""
+          echo "=========================================="
+          echo "✅ Все проверки (pytest + ruff + pyright) успешно завершены"
+          echo "=========================================="
 
       - name: Login to container registry and build images
         env:
@@ -162,8 +187,9 @@ jobs:
           DOMAIN: ${{ secrets.DOMAIN || 'async-black.ru' }}
           ROOT_PATH: ${{ secrets.ROOT_PATH || '/apps/em-auth' }}
         run: |
-          kubectl -n em-auth rollout status deployment/fastapi-app --timeout=180s
-          kubectl -n em-auth rollout status deployment/nginx --timeout=180s
+          # fastapi: pull образа + alembic + readiness; 180s на слабом k3s часто мало
+          kubectl -n em-auth rollout status deployment/fastapi-app --timeout=360s
+          kubectl -n em-auth rollout status deployment/nginx --timeout=300s
           kubectl -n em-auth rollout status statefulset/postgres --timeout=180s
           echo "✅ Rollout завершен"
           echo "🌐 Ожидаемый адрес документации: https://${DOMAIN}${ROOT_PATH}/docs#/"
