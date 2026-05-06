@@ -1,7 +1,7 @@
 """
 Базовый класс паттерна Data Mapper: ORM ↔ Pydantic без логики в моделях.
 
-Конкретные мапперы — в том же пакете (например UsersMapper).
+Конкретные мапперы - в том же пакете (например UsersMapper).
 """
 
 from typing import Any, TypeVar

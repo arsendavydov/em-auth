@@ -8,7 +8,7 @@ metadata:
     component: api
 spec:
   replicas: 1
-  # При replicas=1 RollingUpdate часто держит старый под в Terminating, пока новый не Ready —
+  # При replicas=1 RollingUpdate часто держит старый под в Terminating, пока новый не Ready -
   # на слабой ноде k3s это даёт таймаут rollout. Recreate: сначала остановка старого, потом новый.
   strategy:
     type: Recreate

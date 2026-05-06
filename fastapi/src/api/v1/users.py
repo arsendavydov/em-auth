@@ -1,7 +1,7 @@
 """
 Пользователи: регистрация, профиль, список, CRUD по id, назначение ролей.
 
-Бизнес-ограничения по ролям — в UserService; здесь только HTTP-слой и Depends.
+Бизнес-ограничения по ролям - в UserService; здесь только HTTP-слой и Depends.
 """
 
 from fastapi import APIRouter, Depends, status

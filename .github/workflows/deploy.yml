@@ -73,19 +73,19 @@ jobs:
 
           cd fastapi
 
-          echo "::group::Ruff — проверка стиля и ошибок (ruff check)"
+          echo "::group::Ruff - проверка стиля и ошибок (ruff check)"
           echo ">>> Запуск: ruff check src tests"
           ../.venv312/bin/ruff check src tests
           echo "✅ Ruff check: пройдено"
           echo "::endgroup::"
 
-          echo "::group::Ruff — проверка форматирования (ruff format --check)"
+          echo "::group::Ruff - проверка форматирования (ruff format --check)"
           echo ">>> Запуск: ruff format --check src tests"
           ../.venv312/bin/ruff format --check src tests
           echo "✅ Ruff format --check: пройдено"
           echo "::endgroup::"
 
-          echo "::group::Pyright — проверка типов"
+          echo "::group::Pyright - проверка типов"
           echo ">>> Запуск: python -m pyright src"
           ../.venv312/bin/python -m pyright src
           echo "✅ Pyright: пройдено"

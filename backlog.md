@@ -544,7 +544,7 @@
 
 ### 33. Python 3.12, Ruff/Pyright, правки под ревью и Docker local
 
-- **Версия Python**: локально, в `Dockerfile.prod` / `Dockerfile.local`, в GitHub Actions (`setup-python`) и в описании API — **Python 3.12** (образ `python:3.12-slim`).
+- **Версия Python**: локально, в `Dockerfile.prod` / `Dockerfile.local`, в GitHub Actions (`setup-python`) и в описании API - **Python 3.12** (образ `python:3.12-slim`).
 - **Устаревший `datetime.utcnow()`** заменён на **`datetime.now(timezone.utc)`** в:
   - `fastapi/src/api/v1/health.py`
   - `fastapi/tests/unit_tests/test_users_service.py`
@@ -552,17 +552,17 @@
   - в `requirements.txt` добавлены `ruff`, `pyright`;
   - конфиг **`fastapi/pyproject.toml`**: `[tool.ruff]`, `[tool.pyright]` (venv для Pyright в IDE/локально: **`../.venv312`** относительно `fastapi/`);
   - скрипт **`fastapi/scripts/lint.sh`**:
-    - `check` / `fix` — через `docker compose -f docker-compose.local.yml exec fastapi` (`python -m ruff`, `python -m pyright`);
-    - `check-local` / `fix-local` — без Docker, через `.venv312/bin/python` в корне репозитория;
+    - `check` / `fix` - через `docker compose -f docker-compose.local.yml exec fastapi` (`python -m ruff`, `python -m pyright`);
+    - `check-local` / `fix-local` - без Docker, через `.venv312/bin/python` в корне репозитория;
   - правки кода под Ruff: форматирование, импорты, удалён бессмысленный `except` в `http_logging`, типизация mock-ответов в `api/v1/mock.py`, аннотация `get_db` как `AsyncGenerator`, и т.д.;
   - для FastAPI-роутов с `Depends(...)` добавлен **per-file ignore `ARG001`** на `src/api/**/*.py` (аргумент только ради side-effect авторизации).
-- **Docker local для Pyright**: в **`Dockerfile.local`** установлен пакет **`libatomic1`** — иначе в slim-образе падает Node, который подтягивает `pyright-python`.
+- **Docker local для Pyright**: в **`Dockerfile.local`** установлен пакет **`libatomic1`** - иначе в slim-образе падает Node, который подтягивает `pyright-python`.
 - **`docker-compose.local.yml`**: убран устаревший ключ **`version:`** (предупреждение Compose v2).
-- **CI**: шаг «Run unit tests and linters» в `.github/workflows/deploy.yml` гоняет тесты и линтеры **до** сборки образов и выката в k3s; при падении lint — деплой не выполняется.
+- **CI**: шаг «Run unit tests and linters» в `.github/workflows/deploy.yml` гоняет тесты и линтеры **до** сборки образов и выката в k3s; при падении lint - деплой не выполняется.
 - **Документация**: в `README.md` описаны команды линтера, CI-gate и зависимость образа от `libatomic1` для Pyright в контейнере.
 
 ### 34. Комментарии в коде (auth, роли, RBAC)
 
 - Расширены **модульные комментарии** (docstring уровня файла) в: `utils/auth.py`, `services/auth.py`, `services/users.py`, `utils/permissions.py`, `repositories/access_control.py`, `repositories/refresh_tokens.py`, `api/v1/auth.py`.
-- Личные конспекты к собеседованию при желании хранить локально в `docs/` (например `AUTH_JWT_AND_ROLES.md`) — файл в `.gitignore`, в репозиторий не попадает.
+- Личные конспекты к собеседованию при желании хранить локально в `docs/` (например `AUTH_JWT_AND_ROLES.md`) - файл в `.gitignore`, в репозиторий не попадает.
 

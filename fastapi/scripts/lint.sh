@@ -82,13 +82,13 @@ case "$ACTION" in
         echo "Использование: $0 [check|fix|check-local|fix-local]"
         echo ""
         echo "Команды:"
-        echo "  check        — в контейнере docker compose (нужен запущенный fastapi и образ с ruff/pyright)"
-        echo "  fix          — то же, с автоисправлением и format"
-        echo "  check-local  — без Docker: .venv312 в корне проекта"
-        echo "  fix-local    — без Docker: правки + format"
+        echo "  check        - в контейнере docker compose (нужен запущенный fastapi и образ с ruff/pyright)"
+        echo "  fix          - то же, с автоисправлением и format"
+        echo "  check-local  - без Docker: .venv312 в корне проекта"
+        echo "  fix-local    - без Docker: правки + format"
         echo ""
         echo "Запуск из корня проекта: ./fastapi/scripts/lint.sh check-local"
-        echo "Если в контейнере нет ruff — пересоберите: COMPOSE_BAKE=true docker compose -f ${COMPOSE_FILE} build fastapi"
+        echo "Если в контейнере нет ruff - пересоберите: COMPOSE_BAKE=true docker compose -f ${COMPOSE_FILE} build fastapi"
         exit 1
         ;;
 esac

@@ -4,7 +4,7 @@
 Поток: заголовок Authorization → декод JWT (только sub + проверка подписи/exp) → загрузка User из БД
 → роли для RequestUser всегда из БД, не из payload JWT (см. get_current_user).
 
-Функции create_access_token / decode_access_token — синхронные: PyJWT без I/O; async только get_current_user (БД).
+Функции create_access_token / decode_access_token - синхронные: PyJWT без I/O; async только get_current_user (БД).
 """
 
 import secrets
@@ -49,7 +49,7 @@ def create_access_token(user_id: int, roles: list[str]) -> str:
 
     expire_at = datetime.now(UTC) + timedelta(minutes=settings.access_token_expire_minutes)
     # В payload кладём roles для прозрачности/отладки; при запросе get_current_user роли
-    # перечитываются из БД — источник правды по системным ролям там.
+    # перечитываются из БД - источник правды по системным ролям там.
     payload = {
         "sub": str(user_id),
         "roles": roles,
@@ -95,7 +95,7 @@ async def get_current_user(
 
     try:
         payload = decode_access_token(credentials.credentials)
-        # Используем только sub; роли из JWT не доверяем — см. create_access_token.
+        # Используем только sub; роли из JWT не доверяем - см. create_access_token.
         user_id = int(payload["sub"])
     except (InvalidTokenError, KeyError, ValueError):
         raise HTTPException(

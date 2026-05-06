@@ -30,7 +30,7 @@ setup_logging()
 logger = get_logger(__name__)
 
 API_DESCRIPTION = """
-em-auth-service — backend-приложение для демонстрации собственной системы аутентификации
+em-auth-service - backend-приложение для демонстрации собственной системы аутентификации
 и авторизации поверх FastAPI и PostgreSQL.
 
 Основные возможности:
@@ -88,7 +88,7 @@ def create_app() -> FastAPI:
     app.add_exception_handler(DatabaseError, database_exception_handler)
     app.add_exception_handler(DomainException, domain_exception_handler)
     app.add_exception_handler(Exception, general_exception_handler)
-    # Health без авторизации — первым в списке для прозрачности.
+    # Health без авторизации - первым в списке для прозрачности.
     app.include_router(health_v1_router, prefix="/api/v1")
     app.include_router(auth_v1_router, prefix="/api/v1")
     app.include_router(access_v1_router, prefix="/api/v1")

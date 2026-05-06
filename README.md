@@ -1,4 +1,4 @@
-## Effective Mobile — em-auth-service
+## Effective Mobile - em-auth-service
 
 Backend-приложение на `FastAPI` и `PostgreSQL` с собственной системой аутентификации и авторизации, построенной поверх `JWT`, `refresh tokens` и таблиц правил доступа в БД.
 

@@ -1,7 +1,7 @@
 """
 Единый JSON-ответ на ошибки: БД, доменные исключения, всё остальное → 500.
 
-Тела ответов на английском — контракт API для клиентов; комментарии здесь на русском.
+Тела ответов на английском - контракт API для клиентов; комментарии здесь на русском.
 """
 
 from fastapi import Request, status
@@ -22,7 +22,7 @@ async def database_exception_handler(
 
     logger.error(f"Database error: {exc}", exc_info=True)
 
-    # Нарушение уникальности / FK — клиенту отдаём 409
+    # Нарушение уникальности / FK - клиенту отдаём 409
     if isinstance(exc, IntegrityError):
         return JSONResponse(
             status_code=status.HTTP_409_CONFLICT,

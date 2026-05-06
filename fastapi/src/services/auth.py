@@ -94,7 +94,7 @@ class AuthService:
                 detail="User is not available",
             )
 
-        # Ротация: использованный refresh недействителен — защита от повторной выдачи пары.
+        # Ротация: использованный refresh недействителен - защита от повторной выдачи пары.
         await self.refresh_token_repository.revoke_token(data.refresh_token)
 
         roles = await self.repository.get_role_names(user.id)

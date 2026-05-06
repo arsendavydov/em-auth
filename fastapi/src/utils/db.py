@@ -1,7 +1,7 @@
 """
 Асинхронный SQLAlchemy: один engine на процесс, фабрика сессий, dependency get_db для FastAPI.
 
-Сессия на запрос — yield в get_db; после ответа контекстный менеджер закрывает сессию.
+Сессия на запрос - yield в get_db; после ответа контекстный менеджер закрывает сессию.
 """
 
 from collections.abc import AsyncGenerator

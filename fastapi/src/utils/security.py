@@ -16,7 +16,7 @@ def hash_password(password: str) -> str:
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Сравнивает введённый пароль с сохранённым хешом; при битом хеше — False."""
+    """Сравнивает введённый пароль с сохранённым хешом; при битом хеше - False."""
 
     try:
         return bcrypt.checkpw(

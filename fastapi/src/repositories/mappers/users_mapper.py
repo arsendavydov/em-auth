@@ -1,7 +1,7 @@
 """
 Маппинг User ORM ↔ схемы регистрации/чтения/обновления.
 
-Роли в UserRead не лежат в таблице users — подмешиваются аргументом roles.
+Роли в UserRead не лежат в таблице users - подмешиваются аргументом roles.
 """
 
 from typing import Any
@@ -34,7 +34,7 @@ class UsersMapper(DataMapper[User, UserRead]):
         exclude: set[str] | None = None,
         **kwargs: Any,
     ) -> dict[str, Any]:
-        """Словарь полей для конструктора User; exclude — пароли и т.п.; kwargs — password_hash."""
+        """Словарь полей для конструктора User; exclude - пароли и т.п.; kwargs - password_hash."""
         exclude = exclude or set()
         data = schema_obj.model_dump(exclude=exclude, exclude_unset=True)
         data.update(kwargs)

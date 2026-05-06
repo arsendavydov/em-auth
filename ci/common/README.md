@@ -4,5 +4,5 @@
 
 Планируемое содержимое:
 
-- `check-active-provider.sh` — проверка `ACTIVE_CI_PROVIDER` на сервере;
+- `check-active-provider.sh` - проверка `ACTIVE_CI_PROVIDER` на сервере;
 - дополнительные общие проверки для SSH, `kubectl` и deploy guard-логики.
